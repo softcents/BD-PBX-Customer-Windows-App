@@ -81,6 +81,22 @@ jobs:
           Write-Host 'PJSIP headers and libraries installed.'
           Get-ChildItem (Join-Path $parent 'lib') -Filter '*.lib' | Select-Object -ExpandProperty Name
 
+      - name: Build Opus library
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $opusRoot = Join-Path (Split-Path $env:GITHUB_WORKSPACE -Parent) 'opus-build'
+          if (Test-Path $opusRoot) { Remove-Item $opusRoot -Recurse -Force }
+          git clone --depth 1 --branch v1.5.2 https://github.com/xiph/opus.git $opusRoot
+          $build = Join-Path $opusRoot 'build'
+          cmake -S $opusRoot -B $build -G "Visual Studio 17 2022" -A Win32 -DBUILD_SHARED_LIBS=OFF -DOPUS_BUILD_PROGRAMS=OFF -DOPUS_BUILD_TESTING=OFF
+          cmake --build $build --config Release
+          $opusLib = Get-ChildItem -Path $build -Filter 'opus.lib' -Recurse | Select-Object -First 1
+          if (-not $opusLib) { throw 'opus.lib was not produced.' }
+          New-Item -ItemType Directory -Force -Path (Join-Path $env:GITHUB_WORKSPACE 'lib') | Out-Null
+          Copy-Item $opusLib.FullName (Join-Path $env:GITHUB_WORKSPACE 'lib\opus.lib') -Force
+          Write-Host "Installed $($opusLib.FullName) as lib\opus.lib"
+
       - name: Build BD PBX
         shell: cmd
         run: msbuild microsip.vcxproj /m /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143 /p:WindowsTargetPlatformVersion=10.0
