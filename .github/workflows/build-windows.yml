@@ -17,7 +17,7 @@ jobs:
 
       - name: Build BD PBX
         shell: cmd
-        run: msbuild microsip.vcxproj /m /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143
+        run: msbuild microsip.vcxproj /m /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143 /p:WindowsTargetPlatformVersion=10.0
 
       - name: Find EXE
         shell: powershell
