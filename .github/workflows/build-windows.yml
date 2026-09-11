@@ -43,11 +43,17 @@ jobs:
           #define PJMEDIA_HAS_TLS 1
           #endif
           "@ | Set-Content -Path $config -Encoding ASCII
+          Get-ChildItem -Path $pj -Filter '*.vcxproj' -Recurse | ForEach-Object {
+            $text = Get-Content $_.FullName -Raw
+            $text = $text -replace '<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>', '<RuntimeLibrary>MultiThreaded</RuntimeLibrary>'
+            $text = $text -replace '<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>', '<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>'
+            Set-Content -Path $_.FullName -Value $text -Encoding UTF8
+          }
 
       - name: Build PJSIP
         shell: cmd
         working-directory: ..\pjproject
-        run: msbuild pjproject-vs14.sln /m /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143 /p:RuntimeLibrary=MultiThreaded
+        run: msbuild pjproject-vs14.sln /m /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143 /p:WindowsTargetPlatformVersion=10.0
 
       - name: Install PJSIP headers and libraries for BD PBX
         shell: powershell
@@ -73,7 +79,6 @@ jobs:
           if (-not (Test-Path $pjCombined)) { throw "Missing PJSIP combined library: $pjCombined" }
           Copy-Item $pjCombined $pjExpected -Force
           if (-not (Test-Path $pjExpected)) { throw "Failed to create expected library: $pjExpected" }
-          Write-Host "Installed expected PJSIP library: $pjExpected"
 
       - name: Build Opus library
         shell: powershell
@@ -84,25 +89,20 @@ jobs:
           if (Test-Path $opusRoot) { Remove-Item $opusRoot -Recurse -Force }
           git clone --depth 1 --branch v1.5.2 https://github.com/xiph/opus.git $opusRoot
           $build = Join-Path $opusRoot 'build'
-          cmake -S $opusRoot -B $build -G "Visual Studio 17 2022" -A Win32 -DBUILD_SHARED_LIBS=OFF -DOPUS_BUILD_PROGRAMS=OFF -DOPUS_BUILD_TESTING=OFF
+          cmake -S $opusRoot -B $build -G "Visual Studio 17 2022" -A Win32 -DBUILD_SHARED_LIBS=OFF -DOPUS_BUILD_PROGRAMS=OFF -DOPUS_BUILD_TESTING=OFF -DOPUS_STATIC_RUNTIME=ON
           cmake --build $build --config Release
           $opusLib = Get-ChildItem -Path $build -Filter 'opus.lib' -Recurse | Select-Object -First 1
           if (-not $opusLib) { throw 'opus.lib was not produced.' }
           $libDir = Join-Path $parent 'lib'
           New-Item -ItemType Directory -Force -Path $libDir | Out-Null
           Copy-Item $opusLib.FullName (Join-Path $libDir 'opus.lib') -Force
-          if (-not (Test-Path (Join-Path $libDir 'opus.lib'))) { throw 'opus.lib was not installed into the expected library directory.' }
 
       - name: Verify build inputs
         shell: powershell
         run: |
           $parent = Split-Path $env:GITHUB_WORKSPACE -Parent
           $libDir = Join-Path $parent 'lib'
-          $required = @(
-            (Join-Path $libDir 'opus.lib'),
-            (Join-Path $libDir 'libpjproject-i386-Win32-vc14-Release-Static.lib')
-          )
-          foreach ($file in $required) {
+          foreach ($file in @((Join-Path $libDir 'opus.lib'),(Join-Path $libDir 'libpjproject-i386-Win32-vc14-Release-Static.lib'))) {
             if (-not (Test-Path $file)) { throw "Missing required library: $file" }
             Write-Host "Found: $file"
           }
