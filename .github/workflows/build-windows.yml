@@ -17,13 +17,13 @@ jobs:
 
       - name: Build BD PBX
         shell: cmd
-        run: msbuild *.vcxproj /m /p:Configuration=Release /p:Platform=x64
+        run: msbuild microsip.vcxproj /m /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143
 
       - name: Find EXE
         shell: powershell
         run: |
-          $exe = Get-ChildItem -Path . -Filter *.exe -Recurse | Where-Object { $_.FullName -notmatch '\\packages\\|\\third_party\\' } | Select-Object -First 1
-          if (-not $exe) { throw 'No EXE was produced.' }
+          $exe = Get-ChildItem -Path . -Filter microsip.exe -Recurse | Select-Object -First 1
+          if (-not $exe) { throw 'No microsip.exe was produced.' }
           New-Item -ItemType Directory -Force -Path artifacts | Out-Null
           Copy-Item $exe.FullName 'artifacts/BD-PBX.exe'
 
