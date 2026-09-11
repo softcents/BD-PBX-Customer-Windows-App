@@ -37,7 +37,7 @@ jobs:
           #ifndef __PJ_CONFIG_SITE_H__
           #define __PJ_CONFIG_SITE_H__
           #define PJ_CONFIG_MICROSIP 1
-          #define PJMEDIA_HAS_VIDEO 0
+          #define PJMEDIA_HAS_VIDEO 1
           #define PJMEDIA_HAS_OPUS 1
           #define PJMEDIA_HAS_SRTP 1
           #define PJMEDIA_HAS_TLS 1
@@ -47,7 +47,7 @@ jobs:
       - name: Build PJSIP
         shell: cmd
         working-directory: ..\pjproject
-        run: msbuild pjproject-vs14.sln /m /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143
+        run: msbuild pjproject-vs14.sln /m /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143 /p:RuntimeLibrary=MultiThreaded
 
       - name: Install PJSIP headers and libraries for BD PBX
         shell: powershell
@@ -109,7 +109,7 @@ jobs:
 
       - name: Build BD PBX
         shell: cmd
-        run: msbuild microsip.vcxproj /m /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143 /p:WindowsTargetPlatformVersion=10.0
+        run: msbuild microsip.vcxproj /m /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143 /p:WindowsTargetPlatformVersion=10.0 /p:RuntimeLibrary=MultiThreaded
 
       - name: Find EXE
         shell: powershell
