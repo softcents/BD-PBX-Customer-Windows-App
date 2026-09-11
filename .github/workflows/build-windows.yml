@@ -27,14 +27,12 @@ jobs:
           $zip = Join-Path $parent 'pjproject.zip'
           $pj = Join-Path $parent 'pjproject'
           $url = "https://github.com/pjsip/pjproject/archive/refs/tags/$env:PJSIP_VERSION.zip"
-
           Write-Host "Downloading PJSIP $env:PJSIP_VERSION..."
           Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
           if (Test-Path $pj) { Remove-Item $pj -Recurse -Force }
           Expand-Archive -Path $zip -DestinationPath $parent -Force
           $extracted = Join-Path $parent "pjproject-$env:PJSIP_VERSION"
           Rename-Item $extracted $pj
-
           $config = Join-Path $pj 'pjlib\include\pj\config_site.h'
           @"
           #ifndef __PJ_CONFIG_SITE_H__
@@ -46,8 +44,6 @@ jobs:
           #define PJMEDIA_HAS_TLS 1
           #endif
           "@ | Set-Content -Path $config -Encoding ASCII
-
-          Write-Host 'PJSIP source prepared.'
 
       - name: Build PJSIP
         shell: cmd
@@ -61,7 +57,6 @@ jobs:
           $workspace = $env:GITHUB_WORKSPACE
           $parent = Split-Path $workspace -Parent
           $pj = Join-Path $parent 'pjproject'
-
           $dirs = @('pjlib','pjlib-util','pjnath','pjmedia','pjsip','third_party')
           foreach ($d in $dirs) {
             $src = Join-Path $pj $d
@@ -70,16 +65,9 @@ jobs:
             if (Test-Path $dst) { Remove-Item $dst -Recurse -Force }
             Copy-Item $src $dst -Recurse -Force
           }
-
           New-Item -ItemType Directory -Force -Path (Join-Path $parent 'lib') | Out-Null
-          Get-ChildItem -Path (Join-Path $pj 'lib') -Filter '*.lib' -Recurse -ErrorAction SilentlyContinue |
-            ForEach-Object { Copy-Item $_.FullName (Join-Path $parent 'lib') -Force }
-
-          Get-ChildItem -Path (Join-Path $pj 'third_party') -Filter '*.lib' -Recurse -ErrorAction SilentlyContinue |
-            ForEach-Object { Copy-Item $_.FullName (Join-Path $parent 'lib') -Force }
-
-          Write-Host 'PJSIP headers and libraries installed.'
-          Get-ChildItem (Join-Path $parent 'lib') -Filter '*.lib' | Select-Object -ExpandProperty Name
+          Get-ChildItem -Path (Join-Path $pj 'lib') -Filter '*.lib' -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName (Join-Path $parent 'lib') -Force }
+          Get-ChildItem -Path (Join-Path $pj 'third_party') -Filter '*.lib' -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Copy-Item $_.FullName (Join-Path $parent 'lib') -Force }
 
       - name: Build Opus library
         shell: powershell
@@ -95,7 +83,7 @@ jobs:
           if (-not $opusLib) { throw 'opus.lib was not produced.' }
           New-Item -ItemType Directory -Force -Path (Join-Path $env:GITHUB_WORKSPACE 'lib') | Out-Null
           Copy-Item $opusLib.FullName (Join-Path $env:GITHUB_WORKSPACE 'lib\opus.lib') -Force
-          Write-Host "Installed $($opusLib.FullName) as lib\opus.lib"
+          Write-Host "Installed opus.lib"
 
       - name: Build BD PBX
         shell: cmd
