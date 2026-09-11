@@ -45,8 +45,8 @@ jobs:
           "@ | Set-Content -Path $config -Encoding ASCII
           Get-ChildItem -Path $pj -Filter '*.vcxproj' -Recurse | ForEach-Object {
             $text = Get-Content $_.FullName -Raw
-            $text = $text -replace '<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>', '<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>'
-            $text = $text -replace '<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>', '<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>'
+            $text = $text -replace '<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>', '<RuntimeLibrary>MultiThreaded</RuntimeLibrary>'
+            $text = $text -replace '<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>', '<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>'
             Set-Content -Path $_.FullName -Value $text -Encoding UTF8
           }
 
@@ -89,7 +89,7 @@ jobs:
           if (Test-Path $opusRoot) { Remove-Item $opusRoot -Recurse -Force }
           git clone --depth 1 --branch v1.5.2 https://github.com/xiph/opus.git $opusRoot
           $build = Join-Path $opusRoot 'build'
-          cmake -S $opusRoot -B $build -G "Visual Studio 17 2022" -A Win32 -DBUILD_SHARED_LIBS=OFF -DOPUS_BUILD_PROGRAMS=OFF -DOPUS_BUILD_TESTING=OFF
+          cmake -S $opusRoot -B $build -G "Visual Studio 17 2022" -A Win32 -DBUILD_SHARED_LIBS=OFF -DOPUS_BUILD_PROGRAMS=OFF -DOPUS_BUILD_TESTING=OFF -DOPUS_STATIC_RUNTIME=ON
           cmake --build $build --config Release
           $opusLib = Get-ChildItem -Path $build -Filter 'opus.lib' -Recurse | Select-Object -First 1
           if (-not $opusLib) { throw 'opus.lib was not produced.' }
@@ -112,9 +112,9 @@ jobs:
         run: |
           $path = Join-Path $env:GITHUB_WORKSPACE 'microsip.vcxproj'
           $text = Get-Content $path -Raw
-          $text = $text -replace '<RuntimeLibrary>MultiThreaded</RuntimeLibrary>', '<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>'
+          $text = $text -replace '<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>', '<RuntimeLibrary>MultiThreaded</RuntimeLibrary>'
           Set-Content -Path $path -Value $text -Encoding UTF8
-          Write-Host 'BD PBX Release runtime set to /MD to match PJSIP and Opus.'
+          Write-Host 'BD PBX Release runtime set to /MT for static MFC and static dependencies.'
 
       - name: Build BD PBX
         shell: cmd
