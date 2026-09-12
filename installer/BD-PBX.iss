@@ -6,8 +6,11 @@
 [Setup]
 AppId={{7D7E6E75-5F8C-4B0A-BD-PBX-3223}
 AppName={#MyAppName}
+AppVerName={#MyAppName} {#MyAppVersion}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
+AppPublisherURL=https://bdpbx.com
+AppSupportURL=https://bdpbx.com/help
 DefaultDirName={autopf}\BD PBX
 DefaultGroupName=BD PBX
 OutputDir=..\artifacts
@@ -15,6 +18,8 @@ OutputBaseFilename=BD-PBX-Setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+SetupIconFile=..\artifacts\BD-PBX-installer.ico
+WizardImageFile=..\artifacts\BD-PBX-wizard.bmp
 UninstallDisplayIcon={app}\BD-PBX.exe
 PrivilegesRequired=admin
 DisableProgramGroupPage=yes
