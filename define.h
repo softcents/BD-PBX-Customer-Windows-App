@@ -42,9 +42,9 @@
 #define _GLOBAL_SETT_DENYINC_DEFAULT "button"
 #define _GLOBAL_SETT_AA_DEFAULT "button"
 #define _GLOBAL_BUSINESS_FEATURE "This feature is not available in the free version."
-#define _GLOBAL_MENU_WEBSITE ""
+#define _GLOBAL_MENU_WEBSITE "https://website.com"
 #define _GLOBAL_MENU_HELP ""
-#define _GLOBAL_HELP_WEBSITE ""
+#define _GLOBAL_HELP_WEBSITE "https://bdpbx.com/help"
 #define _GLOBAL_URL_CHECK_VERSION ""
 #define _GLOBAL_EC_DEFAULT "1"
 #define _GLOBAL_NAME_NICE _GLOBAL_NAME
