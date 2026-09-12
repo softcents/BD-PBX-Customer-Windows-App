@@ -43,8 +43,6 @@ jobs:
           #define PJMEDIA_HAS_TLS 1
           #endif
           "@ | Set-Content -Path $config -Encoding ASCII
-          # PJSIP 2.15.1 Windows projects default to /MD. Keep every PJSIP
-          # object on the DLL CRT so its __imp___stricmp references resolve.
           Get-ChildItem -Path $pj -Filter '*.vcxproj' -Recurse | ForEach-Object {
             $text = Get-Content $_.FullName -Raw
             $text = $text -replace '<RuntimeLibrary>MultiThreaded</RuntimeLibrary>', '<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>'
@@ -80,7 +78,6 @@ jobs:
           $pjExpected = Join-Path $libDir 'libpjproject-i386-Win32-vc14-Release-Static.lib'
           if (-not (Test-Path $pjCombined)) { throw "Missing PJSIP combined library: $pjCombined" }
           Copy-Item $pjCombined $pjExpected -Force
-          if (-not (Test-Path $pjExpected)) { throw "Failed to create expected library: $pjExpected" }
 
       - name: Build Opus library
         shell: powershell
@@ -91,7 +88,6 @@ jobs:
           if (Test-Path $opusRoot) { Remove-Item $opusRoot -Recurse -Force }
           git clone --depth 1 --branch v1.5.2 https://github.com/xiph/opus.git $opusRoot
           $build = Join-Path $opusRoot 'build'
-          # Match PJSIP/BD PBX's /MD CRT.
           cmake -S $opusRoot -B $build -G "Visual Studio 17 2022" -A Win32 -DBUILD_SHARED_LIBS=OFF -DOPUS_BUILD_PROGRAMS=OFF -DOPUS_BUILD_TESTING=OFF -DOPUS_STATIC_RUNTIME=OFF
           cmake --build $build --config Release
           $opusLib = Get-ChildItem -Path $build -Filter 'opus.lib' -Recurse | Select-Object -First 1
@@ -100,27 +96,25 @@ jobs:
           New-Item -ItemType Directory -Force -Path $libDir | Out-Null
           Copy-Item $opusLib.FullName (Join-Path $libDir 'opus.lib') -Force
 
-      - name: Verify build inputs
+      - name: Verify build inputs and branding
         shell: powershell
         run: |
           $parent = Split-Path $env:GITHUB_WORKSPACE -Parent
           $libDir = Join-Path $parent 'lib'
           foreach ($file in @((Join-Path $libDir 'opus.lib'),(Join-Path $libDir 'libpjproject-i386-Win32-vc14-Release-Static.lib'))) {
             if (-not (Test-Path $file)) { throw "Missing required library: $file" }
-            Write-Host "Found: $file"
           }
+          $icon = Join-Path $env:GITHUB_WORKSPACE 'branding\BD-PBX.ico'
+          if (-not (Test-Path $icon)) { throw 'Missing BD PBX branding icon.' }
 
       - name: Align BD PBX runtime with PJSIP and MFC
         shell: powershell
         run: |
           $project = Join-Path $env:GITHUB_WORKSPACE 'microsip.vcxproj'
           $text = Get-Content $project -Raw
-          # PJSIP and Opus are built with the DLL CRT (/MD), so the app must use /MD too.
           $text = $text -replace '<RuntimeLibrary>MultiThreaded</RuntimeLibrary>', '<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>'
           $text = $text -replace '<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>', '<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>'
-          # The project originally used static MFC. /MD requires the shared MFC runtime.
           $text = $text -replace '<UseOfMfc>Static</UseOfMfc>', '<UseOfMfc>Dynamic</UseOfMfc>'
-          # Ensure the MFC shared-runtime preprocessor define is present for the Win32 Release build.
           $text = $text -replace '<PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>', '<PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>'
           Set-Content -Path $project -Value $text -Encoding UTF8
 
@@ -128,16 +122,34 @@ jobs:
         shell: cmd
         run: msbuild microsip.vcxproj /m /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143 /p:WindowsTargetPlatformVersion=10.0 /p:RuntimeLibrary=MultiThreadedDLL
 
-      - name: Find EXE
+      - name: Prepare EXE and VC++ runtime
         shell: powershell
         run: |
+          $ErrorActionPreference = 'Stop'
           $exe = Get-ChildItem -Path . -Filter microsip.exe -Recurse | Where-Object { $_.FullName -notmatch '\\microsip\\' } | Select-Object -First 1
           if (-not $exe) { throw 'No microsip.exe was produced.' }
           New-Item -ItemType Directory -Force -Path artifacts | Out-Null
-          Copy-Item $exe.FullName 'artifacts/BD-PBX.exe'
+          Copy-Item $exe.FullName 'artifacts/BD-PBX.exe' -Force
+          Invoke-WebRequest -Uri 'https://aka.ms/vs/17/release/vc_redist.x86.exe' -OutFile 'artifacts/vc_redist.x86.exe' -UseBasicParsing
+
+      - name: Build BD PBX installer
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $iscc = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path $iscc)) { throw "Inno Setup compiler not found: $iscc" }
+          & $iscc 'installer\BD-PBX.iss'
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed with exit code $LASTEXITCODE" }
+          if (-not (Test-Path 'artifacts\BD-PBX-Setup.exe')) { throw 'Installer was not produced.' }
 
       - name: Upload BD PBX EXE
         uses: actions/upload-artifact@v4
         with:
           name: BD-PBX-Windows
           path: artifacts/BD-PBX.exe
+
+      - name: Upload BD PBX Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: BD-PBX-Installer
+          path: artifacts/BD-PBX-Setup.exe
