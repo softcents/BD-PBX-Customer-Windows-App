@@ -22,7 +22,7 @@
 
 // BD PBX branding
 #define _GLOBAL_ICON "branding\\BD-PBX.ico"
-#define _GLOBAL_ICON_INACTIVE "res\\tray_inactive.ico"
+#define _GLOBAL_ICON_INACTIVE _GLOBAL_ICON
 
 #define _GLOBAL_HEIGHT1 0
 #define _GLOBAL_HEIGHT2 _GLOBAL_HEIGHT1+16
@@ -42,8 +42,8 @@
 #define _GLOBAL_SETT_DENYINC_DEFAULT "button"
 #define _GLOBAL_SETT_AA_DEFAULT "button"
 #define _GLOBAL_BUSINESS_FEATURE "This feature is not available in the free version."
-#define _GLOBAL_MENU_WEBSITE "https://website.com"
-#define _GLOBAL_MENU_HELP ""
+#define _GLOBAL_MENU_WEBSITE "https://bdpbx.com"
+#define _GLOBAL_MENU_HELP "https://bdpbx.com/help"
 #define _GLOBAL_HELP_WEBSITE "https://bdpbx.com/help"
 #define _GLOBAL_URL_CHECK_VERSION ""
 #define _GLOBAL_EC_DEFAULT "1"
