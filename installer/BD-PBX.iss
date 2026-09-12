@@ -15,7 +15,6 @@ OutputBaseFilename=BD-PBX-Setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-ArchitecturesInstallIn64BitMode=x64compatible
 SetupIconFile=..\branding\BD-PBX.ico
 UninstallDisplayIcon={app}\BD-PBX.exe
 PrivilegesRequired=admin
