@@ -138,6 +138,45 @@ jobs:
           Copy-Item $exe.FullName 'artifacts/BD-PBX.exe' -Force
           Invoke-WebRequest -Uri 'https://aka.ms/vs/17/release/vc_redist.x86.exe' -OutFile 'artifacts/vc_redist.x86.exe' -UseBasicParsing
 
+      - name: Prepare BD PBX installer branding
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Add-Type -AssemblyName System.Drawing
+          $exePath = (Resolve-Path 'artifacts\BD-PBX.exe').Path
+          $icoPath = Join-Path (Resolve-Path 'artifacts').Path 'BD-PBX-installer.ico'
+          $bmpPath = Join-Path (Resolve-Path 'artifacts').Path 'BD-PBX-wizard.bmp'
+          $icon = [System.Drawing.Icon]::ExtractAssociatedIcon($exePath)
+          if (-not $icon) { throw 'Could not extract the BD PBX icon from the EXE.' }
+          try {
+            $stream = [System.IO.File]::Open($icoPath, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write)
+            try { $icon.Save($stream) } finally { $stream.Dispose() }
+            $bmp = New-Object System.Drawing.Bitmap 164,314
+            try {
+              $g = [System.Drawing.Graphics]::FromImage($bmp)
+              try {
+                $g.Clear([System.Drawing.Color]::White)
+                $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+                $size = 128
+                $x = [int](($bmp.Width - $size) / 2)
+                $y = 48
+                $g.DrawIcon($icon, $x, $y)
+                $font = New-Object System.Drawing.Font('Segoe UI', 16, [System.Drawing.FontStyle]::Bold)
+                try {
+                  $brush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(40,40,40))
+                  try {
+                    $text = 'BD PBX'
+                    $textSize = $g.MeasureString($text, $font)
+                    $g.DrawString($text, $font, $brush, ($bmp.Width-$textSize.Width)/2, 210)
+                  } finally { $brush.Dispose() }
+                } finally { $font.Dispose() }
+              } finally { $g.Dispose() }
+              $bmp.Save($bmpPath, [System.Drawing.Imaging.ImageFormat]::Bmp)
+            } finally { $bmp.Dispose() }
+          } finally { $icon.Dispose() }
+          if (-not (Test-Path $icoPath)) { throw 'Installer icon was not created.' }
+          if (-not (Test-Path $bmpPath)) { throw 'Installer wizard branding image was not created.' }
+
       - name: Build BD PBX installer
         shell: powershell
         run: |
