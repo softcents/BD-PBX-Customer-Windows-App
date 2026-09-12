@@ -110,13 +110,18 @@ jobs:
             Write-Host "Found: $file"
           }
 
-      - name: Align BD PBX runtime with PJSIP
+      - name: Align BD PBX runtime with PJSIP and MFC
         shell: powershell
         run: |
           $project = Join-Path $env:GITHUB_WORKSPACE 'microsip.vcxproj'
           $text = Get-Content $project -Raw
+          # PJSIP and Opus are built with the DLL CRT (/MD), so the app must use /MD too.
           $text = $text -replace '<RuntimeLibrary>MultiThreaded</RuntimeLibrary>', '<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>'
           $text = $text -replace '<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>', '<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>'
+          # The project originally used static MFC. /MD requires the shared MFC runtime.
+          $text = $text -replace '<UseOfMfc>Static</UseOfMfc>', '<UseOfMfc>Dynamic</UseOfMfc>'
+          # Ensure the MFC shared-runtime preprocessor define is present for the Win32 Release build.
+          $text = $text -replace '<PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>', '<PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>'
           Set-Content -Path $project -Value $text -Encoding UTF8
 
       - name: Build BD PBX
