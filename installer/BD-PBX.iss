@@ -33,14 +33,17 @@ Type: filesandordirs; Name: "{localappdata}\BD-PBX"
 ; Fresh install: remove legacy MicroSIP configuration locations.
 Type: filesandordirs; Name: "{userappdata}\MicroSIP"
 Type: filesandordirs; Name: "{localappdata}\MicroSIP"
+; Force recreation of the desktop shortcut so Windows uses the BD PBX icon.
+Type: files; Name: "{autodesktop}\BD PBX.lnk"
 
 [Files]
 Source: "..\artifacts\BD-PBX.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\branding\BD-PBX.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\artifacts\vc_redist.x86.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
 [Icons]
-Name: "{autodesktop}\BD PBX"; Filename: "{app}\BD-PBX.exe"; IconFilename: "{app}\BD-PBX.exe"
-Name: "{group}\BD PBX"; Filename: "{app}\BD-PBX.exe"; IconFilename: "{app}\BD-PBX.exe"
+Name: "{autodesktop}\BD PBX"; Filename: "{app}\BD-PBX.exe"; IconFilename: "{app}\BD-PBX.ico"; IconIndex: 0
+Name: "{group}\BD PBX"; Filename: "{app}\BD-PBX.exe"; IconFilename: "{app}\BD-PBX.ico"; IconIndex: 0
 
 [Registry]
 Root: HKCU; Subkey: "Software\BD-PBX"; ValueType: string; ValueName: ""; ValueData: "{app}"; Flags: uninsdeletekey
