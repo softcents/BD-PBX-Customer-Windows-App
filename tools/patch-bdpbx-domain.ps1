@@ -50,7 +50,7 @@ $cpp = $cpp.Replace('m_Account.domain=str.Trim();', 'm_Account.domain=BdPbxFullV
 [IO.File]::WriteAllText($cppPath, $cpp, [Text.UTF8Encoding]::new($false))
 
 $rc = [IO.File]::ReadAllText($rcPath)
-$domainSuffix = 'LTEXT           ".bdpbx.com", IDC_STATIC, '
+$domainSuffix = 'LTEXT           ".bdpbx.com", IDC_STATIC, 166, '
 $controls = @(
     @{ id='IDC_EDIT_SERVER'; y='7'; labelY='10' },
     @{ id='IDC_EDIT_PROXY'; y='26'; labelY='29' },
