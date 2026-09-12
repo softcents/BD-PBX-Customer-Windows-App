@@ -43,17 +43,19 @@ jobs:
           #define PJMEDIA_HAS_TLS 1
           #endif
           "@ | Set-Content -Path $config -Encoding ASCII
+          # PJSIP 2.15.1 Windows projects default to /MD. Keep every PJSIP
+          # object on the DLL CRT so its __imp___stricmp references resolve.
           Get-ChildItem -Path $pj -Filter '*.vcxproj' -Recurse | ForEach-Object {
             $text = Get-Content $_.FullName -Raw
-            $text = $text -replace '<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>', '<RuntimeLibrary>MultiThreaded</RuntimeLibrary>'
-            $text = $text -replace '<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>', '<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>'
+            $text = $text -replace '<RuntimeLibrary>MultiThreaded</RuntimeLibrary>', '<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>'
+            $text = $text -replace '<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>', '<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>'
             Set-Content -Path $_.FullName -Value $text -Encoding UTF8
           }
 
       - name: Build PJSIP
         shell: cmd
         working-directory: ..\pjproject
-        run: msbuild pjproject-vs14.sln /m /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143 /p:WindowsTargetPlatformVersion=10.0 /p:RuntimeLibrary=MultiThreaded
+        run: msbuild pjproject-vs14.sln /m /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143 /p:WindowsTargetPlatformVersion=10.0 /p:RuntimeLibrary=MultiThreadedDLL
 
       - name: Install PJSIP headers and libraries for BD PBX
         shell: powershell
@@ -89,7 +91,8 @@ jobs:
           if (Test-Path $opusRoot) { Remove-Item $opusRoot -Recurse -Force }
           git clone --depth 1 --branch v1.5.2 https://github.com/xiph/opus.git $opusRoot
           $build = Join-Path $opusRoot 'build'
-          cmake -S $opusRoot -B $build -G "Visual Studio 17 2022" -A Win32 -DBUILD_SHARED_LIBS=OFF -DOPUS_BUILD_PROGRAMS=OFF -DOPUS_BUILD_TESTING=OFF -DOPUS_STATIC_RUNTIME=ON
+          # Match PJSIP/BD PBX's /MD CRT.
+          cmake -S $opusRoot -B $build -G "Visual Studio 17 2022" -A Win32 -DBUILD_SHARED_LIBS=OFF -DOPUS_BUILD_PROGRAMS=OFF -DOPUS_BUILD_TESTING=OFF -DOPUS_STATIC_RUNTIME=OFF
           cmake --build $build --config Release
           $opusLib = Get-ChildItem -Path $build -Filter 'opus.lib' -Recurse | Select-Object -First 1
           if (-not $opusLib) { throw 'opus.lib was not produced.' }
@@ -107,9 +110,18 @@ jobs:
             Write-Host "Found: $file"
           }
 
+      - name: Align BD PBX runtime with PJSIP
+        shell: powershell
+        run: |
+          $project = Join-Path $env:GITHUB_WORKSPACE 'microsip.vcxproj'
+          $text = Get-Content $project -Raw
+          $text = $text -replace '<RuntimeLibrary>MultiThreaded</RuntimeLibrary>', '<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>'
+          $text = $text -replace '<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>', '<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>'
+          Set-Content -Path $project -Value $text -Encoding UTF8
+
       - name: Build BD PBX
         shell: cmd
-        run: msbuild microsip.vcxproj /m /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143 /p:WindowsTargetPlatformVersion=10.0 /p:RuntimeLibrary=MultiThreaded
+        run: msbuild microsip.vcxproj /m /p:Configuration=Release /p:Platform=Win32 /p:PlatformToolset=v143 /p:WindowsTargetPlatformVersion=10.0 /p:RuntimeLibrary=MultiThreadedDLL
 
       - name: Find EXE
         shell: powershell
