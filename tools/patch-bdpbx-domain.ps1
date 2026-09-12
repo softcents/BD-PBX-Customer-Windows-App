@@ -4,151 +4,64 @@ if ([string]::IsNullOrWhiteSpace($root)) { $root = (Get-Location).Path }
 
 $cppPath = Join-Path $root 'AccountDlg.cpp'
 $rcPath = Join-Path $root 'res\dialog.rc2'
-
 $cpp = [IO.File]::ReadAllText($cppPath)
 
 $marker = 'static CString transportValues[] = {'
-$helper = @'
-static const CString kBdPbxDomainSuffix = _T(".bdpbx.com");
-
-static CString BdPbxDisplayValue(const CString& value)
-{
-    CString v = value.Trim();
-    int colon = v.Find(_T(":"));
-    CString port;
-    if (colon > 0) {
-        port = v.Mid(colon);
-        v = v.Left(colon);
-    }
-    CString lower = v;
-    lower.MakeLower();
-    CString suffix = kBdPbxDomainSuffix;
-    CString suffixLower = suffix;
-    suffixLower.MakeLower();
-    if (lower.Right(suffixLower.GetLength()) == suffixLower) {
-        v = v.Left(v.GetLength() - suffix.GetLength());
-    }
-    else {
-        int dot = v.Find(_T("."));
-        if (dot > 0) {
-            v = v.Left(dot);
-        }
-    }
-    v.Trim(_T("."));
-    return v;
+$helper = @(
+'static const CString kBdPbxDomainSuffix = _T(".bdpbx.com");',
+'',
+'static CString BdPbxDisplayValue(const CString& value)',
+'{',
+'    CString v = value.Trim();',
+'    int colon = v.Find(_T(":"));',
+'    CString port;',
+'    if (colon > 0) { port = v.Mid(colon); v = v.Left(colon); }',
+'    CString lower = v; lower.MakeLower();',
+'    CString suffixLower = kBdPbxDomainSuffix; suffixLower.MakeLower();',
+'    if (lower.Right(suffixLower.GetLength()) == suffixLower) {',
+'        v = v.Left(v.GetLength() - kBdPbxDomainSuffix.GetLength());',
+'    } else {',
+'        int dot = v.Find(_T("."));',
+'        if (dot > 0) v = v.Left(dot);',
+'    }',
+'    v.Trim(_T("."));',
+'    return v;',
+'}',
+'',
+'static CString BdPbxFullValue(const CString& value)',
+'{',
+'    CString v = BdPbxDisplayValue(value);',
+'    if (v.IsEmpty()) return _T("");',
+'    return v + kBdPbxDomainSuffix;',
+'}',
+''
+) -join "`r`n"
+if (-not $cpp.Contains('static const CString kBdPbxDomainSuffix')) {
+    if (-not $cpp.Contains($marker)) { throw 'AccountDlg transport marker not found.' }
+    $cpp = $cpp.Replace($marker, $helper + $marker)
 }
 
-static CString BdPbxFullValue(const CString& value)
-{
-    CString v = value.Trim();
-    int colon = v.Find(_T(":"));
-    CString port;
-    if (colon > 0) {
-        port = v.Mid(colon);
-        v = v.Left(colon);
-    }
-    CString lower = v;
-    lower.MakeLower();
-    CString suffix = kBdPbxDomainSuffix;
-    CString suffixLower = suffix;
-    suffixLower.MakeLower();
-    if (lower.Right(suffixLower.GetLength()) == suffixLower) {
-        v = v.Left(v.GetLength() - suffix.GetLength());
-    }
-    else {
-        int dot = v.Find(_T("."));
-        if (dot > 0) {
-            v = v.Left(dot);
-        }
-    }
-    v.Trim(_T("."));
-    if (v.IsEmpty()) {
-        return _T("");
-    }
-    return v + suffix + port;
-}
-
-'@
-if ($cpp.Contains($helper)) { throw 'BD PBX domain helper is already present.' }
-$cpp = $cpp.Replace($marker, $helper + $marker)
-
-$oldLoad = @'
-edit = (CEdit*)GetDlgItem(IDC_EDIT_SERVER);
-edit->SetWindowText(m_Account.server);
-edit = (CEdit*)GetDlgItem(IDC_EDIT_PROXY);
-edit->SetWindowText(m_Account.proxy);
-edit = (CEdit*)GetDlgItem(IDC_EDIT_DOMAIN);
-edit->SetWindowText(m_Account.domain);
-'@
-$newLoad = @'
-edit = (CEdit*)GetDlgItem(IDC_EDIT_SERVER);
-edit->SetWindowText(BdPbxDisplayValue(m_Account.server));
-edit = (CEdit*)GetDlgItem(IDC_EDIT_PROXY);
-edit->SetWindowText(BdPbxDisplayValue(m_Account.proxy));
-edit = (CEdit*)GetDlgItem(IDC_EDIT_DOMAIN);
-edit->SetWindowText(BdPbxDisplayValue(m_Account.domain));
-'@
-if (-not $cpp.Contains($oldLoad)) { throw 'Account Load block not found.' }
-$cpp = $cpp.Replace($oldLoad, $newLoad)
-
-$oldSave = @'
-edit = (CEdit*)GetDlgItem(IDC_EDIT_SERVER);
-edit->GetWindowText(str);
-m_Account.server=str.Trim();
-edit = (CEdit*)GetDlgItem(IDC_EDIT_PROXY);
-edit->GetWindowText(str);
-m_Account.proxy=str.Trim();
-edit = (CEdit*)GetDlgItem(IDC_EDIT_DOMAIN);
-edit->GetWindowText(str);
-m_Account.domain=str.Trim();
-'@
-$newSave = @'
-edit = (CEdit*)GetDlgItem(IDC_EDIT_SERVER);
-edit->GetWindowText(str);
-m_Account.server=BdPbxFullValue(str);
-edit = (CEdit*)GetDlgItem(IDC_EDIT_PROXY);
-edit->GetWindowText(str);
-m_Account.proxy=BdPbxFullValue(str);
-edit = (CEdit*)GetDlgItem(IDC_EDIT_DOMAIN);
-edit->GetWindowText(str);
-m_Account.domain=BdPbxFullValue(str);
-'@
-if (-not $cpp.Contains($oldSave)) { throw 'Account Save block not found.' }
-$cpp = $cpp.Replace($oldSave, $newSave)
-
+$cpp = $cpp.Replace('edit->SetWindowText(m_Account.server);', 'edit->SetWindowText(BdPbxDisplayValue(m_Account.server));')
+$cpp = $cpp.Replace('edit->SetWindowText(m_Account.proxy);', 'edit->SetWindowText(BdPbxDisplayValue(m_Account.proxy));')
+$cpp = $cpp.Replace('edit->SetWindowText(m_Account.domain);', 'edit->SetWindowText(BdPbxDisplayValue(m_Account.domain));')
+$cpp = $cpp.Replace('m_Account.server=str.Trim();', 'm_Account.server=BdPbxFullValue(str);')
+$cpp = $cpp.Replace('m_Account.proxy=str.Trim();', 'm_Account.proxy=BdPbxFullValue(str);')
+$cpp = $cpp.Replace('m_Account.domain=str.Trim();', 'm_Account.domain=BdPbxFullValue(str);')
 [IO.File]::WriteAllText($cppPath, $cpp, [Text.UTF8Encoding]::new($false))
 
 $rc = [IO.File]::ReadAllText($rcPath)
-$oldServer = @'EDITTEXT        IDC_EDIT_SERVER, 86, 7 + IDD_ACCOUNT_OFF_LABEL,
-127
-, 14, ES_AUTOHSCROLL
-'@
-$newServer = @'EDITTEXT        IDC_EDIT_SERVER, 86, 7 + IDD_ACCOUNT_OFF_LABEL,
-78
-, 14, ES_AUTOHSCROLL
-LTEXT           ".bdpbx.com", IDC_STATIC, 166, 10 + IDD_ACCOUNT_OFF_LABEL, 47, 8
-'@
-$oldProxy = @'EDITTEXT        IDC_EDIT_PROXY, 86, 26 + IDD_ACCOUNT_OFF_LABEL,
-127
-, 14, ES_AUTOHSCROLL
-'@
-$newProxy = @'EDITTEXT        IDC_EDIT_PROXY, 86, 26 + IDD_ACCOUNT_OFF_LABEL,
-78
-, 14, ES_AUTOHSCROLL
-LTEXT           ".bdpbx.com", IDC_STATIC, 166, 29 + IDD_ACCOUNT_OFF_LABEL, 47, 8
-'@
-$oldDomain = @'EDITTEXT        IDC_EDIT_DOMAIN, 86, 71 + IDD_ACCOUNT_OFF_LABEL,
-127
-, 14, ES_AUTOHSCROLL
-'@
-$newDomain = @'EDITTEXT        IDC_EDIT_DOMAIN, 86, 71 + IDD_ACCOUNT_OFF_LABEL,
-78
-, 14, ES_AUTOHSCROLL
-LTEXT           ".bdpbx.com", IDC_STATIC, 166, 74 + IDD_ACCOUNT_OFF_LABEL, 47, 8
-'@
-foreach ($pair in @(@($oldServer,$newServer), @($oldProxy,$newProxy), @($oldDomain,$newDomain))) {
-    if (-not $rc.Contains($pair[0])) { throw 'Account domain resource block not found.' }
-    $rc = $rc.Replace($pair[0], $pair[1])
+$domainSuffix = 'LTEXT           ".bdpbx.com", IDC_STATIC, '
+$controls = @(
+    @{ id='IDC_EDIT_SERVER'; y='7'; labelY='10' },
+    @{ id='IDC_EDIT_PROXY'; y='26'; labelY='29' },
+    @{ id='IDC_EDIT_DOMAIN'; y='71'; labelY='74' }
+)
+foreach ($c in $controls) {
+    $pattern = 'EDITTEXT\s+' + [regex]::Escape($c.id) + ',\s*86,\s*' + $c.y + '\s*\+\s*IDD_ACCOUNT_OFF_LABEL,\s*127\s*,\s*14,\s*ES_AUTOHSCROLL'
+    $replacement = 'EDITTEXT        ' + $c.id + ', 86, ' + $c.y + ' + IDD_ACCOUNT_OFF_LABEL, 78, 14, ES_AUTOHSCROLL' + "`r`n" + $domainSuffix + $c.labelY + ' + IDD_ACCOUNT_OFF_LABEL, 47, 8'
+    $newRc = [regex]::Replace($rc, $pattern, $replacement, 1)
+    if ($newRc -eq $rc) { throw ('Account domain resource block not found: ' + $c.id) }
+    $rc = $newRc
 }
 [IO.File]::WriteAllText($rcPath, $rc, [Text.UTF8Encoding]::new($false))
 
