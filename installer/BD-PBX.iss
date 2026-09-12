@@ -41,3 +41,7 @@ Filename: "{app}\BD-PBX.exe"; Description: "Launch BD PBX"; Flags: nowait postin
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"
+Type: filesandordirs; Name: "{userappdata}\BD PBX"
+Type: filesandordirs; Name: "{userappdata}\MicroSIP"
+Type: filesandordirs; Name: "{localappdata}\BD PBX"
+Type: filesandordirs; Name: "{localappdata}\MicroSIP"
