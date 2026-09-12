@@ -24,6 +24,14 @@ UninstallDisplayIcon={app}\BD-PBX.exe
 PrivilegesRequired=admin
 DisableProgramGroupPage=yes
 
+[InstallDelete]
+; Always start a BD PBX installation with clean configuration.
+Type: filesandordirs; Name: "{userappdata}\BD PBX"
+Type: filesandordirs; Name: "{localappdata}\BD PBX"
+; Remove legacy MicroSIP configuration left by the original application.
+Type: filesandordirs; Name: "{userappdata}\MicroSIP"
+Type: filesandordirs; Name: "{localappdata}\MicroSIP"
+
 [Files]
 Source: "..\artifacts\BD-PBX.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\artifacts\vc_redist.x86.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
