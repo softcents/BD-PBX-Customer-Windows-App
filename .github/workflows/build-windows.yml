@@ -113,6 +113,12 @@ jobs:
           $ErrorActionPreference = 'Stop'
           & (Join-Path $env:GITHUB_WORKSPACE 'tools\patch-bdpbx-domain.ps1')
 
+      - name: Disable BD PBX update checker and force website links
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & (Join-Path $env:GITHUB_WORKSPACE 'tools\patch-bdpbx-updates.ps1')
+
       - name: Align BD PBX runtime with PJSIP and MFC
         shell: powershell
         run: |
