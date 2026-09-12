@@ -27,6 +27,9 @@ Source: "..\artifacts\vc_redist.x86.exe"; DestDir: "{tmp}"; Flags: deleteafterin
 Name: "{autodesktop}\BD PBX"; Filename: "{app}\BD-PBX.exe"; IconFilename: "{app}\BD-PBX.exe"
 Name: "{group}\BD PBX"; Filename: "{app}\BD-PBX.exe"; IconFilename: "{app}\BD-PBX.exe"
 
+[Registry]
+Root: HKCU; Subkey: "Software\BD-PBX"; ValueType: string; ValueName: ""; ValueData: "{app}"; Flags: uninsdeletekey
+
 [Run]
 Filename: "{tmp}\vc_redist.x86.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "Installing Microsoft Visual C++ Runtime..."; Flags: waituntilterminated
 Filename: "{app}\BD-PBX.exe"; Description: "Launch BD PBX"; Flags: nowait postinstall skipifsilent
