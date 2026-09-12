@@ -51,6 +51,7 @@ Filename: "{app}\BD-PBX.exe"; Description: "Launch BD PBX"; Flags: nowait postin
 
 [UninstallRun]
 Filename: "{cmd}"; Parameters: "/C taskkill /F /IM BD-PBX.exe /T >nul 2>&1"; Flags: runhidden waituntilterminated
+Filename: "{cmd}"; Parameters: "/C taskkill /F /IM MicroSIP.exe /T >nul 2>&1"; Flags: runhidden waituntilterminated
 
 [UninstallDelete]
 ; Remove application files and all known configuration locations.
@@ -61,3 +62,34 @@ Type: filesandordirs; Name: "{userappdata}\BD-PBX"
 Type: filesandordirs; Name: "{localappdata}\BD-PBX"
 Type: filesandordirs; Name: "{userappdata}\MicroSIP"
 Type: filesandordirs; Name: "{localappdata}\MicroSIP"
+
+[Code]
+function RunHidden(const FileName, Params: String): Boolean;
+var
+  ResultCode: Integer;
+begin
+  Result := Exec(FileName, Params, '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+end;
+
+function InitializeSetup(): Boolean;
+begin
+  { Stop running clients so configuration files are not locked during cleanup. }
+  RunHidden(ExpandConstant('{cmd}'), '/C taskkill /F /IM BD-PBX.exe /T >nul 2>&1');
+  RunHidden(ExpandConstant('{cmd}'), '/C taskkill /F /IM MicroSIP.exe /T >nul 2>&1');
+
+  { Remove old registry state so the next BD PBX start is truly fresh. }
+  RunHidden(ExpandConstant('{sys}\reg.exe'), 'delete "HKCU\Software\BD-PBX" /f');
+  RunHidden(ExpandConstant('{sys}\reg.exe'), 'delete "HKCU\Software\BD PBX" /f');
+  RunHidden(ExpandConstant('{sys}\reg.exe'), 'delete "HKLM\Software\BD-PBX" /f');
+  RunHidden(ExpandConstant('{sys}\reg.exe'), 'delete "HKLM\Software\BD PBX" /f');
+
+  Result := True;
+end;
+
+function InitializeUninstall(): Boolean;
+begin
+  { Stop the application before UninstallDelete removes its files and settings. }
+  RunHidden(ExpandConstant('{cmd}'), '/C taskkill /F /IM BD-PBX.exe /T >nul 2>&1');
+  RunHidden(ExpandConstant('{cmd}'), '/C taskkill /F /IM MicroSIP.exe /T >nul 2>&1');
+  Result := True;
+end;
