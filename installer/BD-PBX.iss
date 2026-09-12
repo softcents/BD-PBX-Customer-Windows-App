@@ -15,19 +15,17 @@ OutputBaseFilename=BD-PBX-Setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-SetupIconFile=..\branding\BD-PBX.ico
 UninstallDisplayIcon={app}\BD-PBX.exe
 PrivilegesRequired=admin
 DisableProgramGroupPage=yes
 
 [Files]
 Source: "..\artifacts\BD-PBX.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\branding\BD-PBX.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\artifacts\vc_redist.x86.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
 [Icons]
-Name: "{autodesktop}\BD PBX"; Filename: "{app}\BD-PBX.exe"; IconFilename: "{app}\BD-PBX.ico"
-Name: "{group}\BD PBX"; Filename: "{app}\BD-PBX.exe"; IconFilename: "{app}\BD-PBX.ico"
+Name: "{autodesktop}\BD PBX"; Filename: "{app}\BD-PBX.exe"; IconFilename: "{app}\BD-PBX.exe"
+Name: "{group}\BD PBX"; Filename: "{app}\BD-PBX.exe"; IconFilename: "{app}\BD-PBX.exe"
 
 [Run]
 Filename: "{tmp}\vc_redist.x86.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "Installing Microsoft Visual C++ Runtime..."; Flags: waituntilterminated
