@@ -107,6 +107,12 @@ jobs:
           $icon = Join-Path $env:GITHUB_WORKSPACE 'branding\BD-PBX.ico'
           if (-not (Test-Path $icon)) { throw 'Missing BD PBX branding icon.' }
 
+      - name: Apply BD PBX fixed-domain UI/source patch
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & (Join-Path $env:GITHUB_WORKSPACE 'tools\patch-bdpbx-domain.ps1')
+
       - name: Align BD PBX runtime with PJSIP and MFC
         shell: powershell
         run: |
