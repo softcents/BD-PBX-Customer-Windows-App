@@ -10,7 +10,7 @@ AppVerName={#MyAppName} {#MyAppVersion}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL=https://bdpbx.com
-AppSupportURL=https://bdpbx.com/help
+AppSupportURL=https://bdpbx.com
 DefaultDirName={autopf}\BD PBX
 DefaultGroupName=BD PBX
 OutputDir=..\artifacts
@@ -25,10 +25,12 @@ PrivilegesRequired=admin
 DisableProgramGroupPage=yes
 
 [InstallDelete]
-; Always start a BD PBX installation with clean configuration.
+; Fresh install: remove every known BD PBX configuration location first.
 Type: filesandordirs; Name: "{userappdata}\BD PBX"
 Type: filesandordirs; Name: "{localappdata}\BD PBX"
-; Remove legacy MicroSIP configuration left by the original application.
+Type: filesandordirs; Name: "{userappdata}\BD-PBX"
+Type: filesandordirs; Name: "{localappdata}\BD-PBX"
+; Fresh install: remove legacy MicroSIP configuration locations.
 Type: filesandordirs; Name: "{userappdata}\MicroSIP"
 Type: filesandordirs; Name: "{localappdata}\MicroSIP"
 
@@ -47,9 +49,15 @@ Root: HKCU; Subkey: "Software\BD-PBX"; ValueType: string; ValueName: ""; ValueDa
 Filename: "{tmp}\vc_redist.x86.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "Installing Microsoft Visual C++ Runtime..."; Flags: waituntilterminated
 Filename: "{app}\BD-PBX.exe"; Description: "Launch BD PBX"; Flags: nowait postinstall skipifsilent
 
+[UninstallRun]
+Filename: "{cmd}"; Parameters: "/C taskkill /F /IM BD-PBX.exe /T >nul 2>&1"; Flags: runhidden waituntilterminated
+
 [UninstallDelete]
+; Remove application files and all known configuration locations.
 Type: filesandordirs; Name: "{app}"
 Type: filesandordirs; Name: "{userappdata}\BD PBX"
-Type: filesandordirs; Name: "{userappdata}\MicroSIP"
 Type: filesandordirs; Name: "{localappdata}\BD PBX"
+Type: filesandordirs; Name: "{userappdata}\BD-PBX"
+Type: filesandordirs; Name: "{localappdata}\BD-PBX"
+Type: filesandordirs; Name: "{userappdata}\MicroSIP"
 Type: filesandordirs; Name: "{localappdata}\MicroSIP"
