@@ -43,7 +43,8 @@ static const CString kBdPbxDomainSuffix = _T(".bdpbx.com");
 
 static CString BdPbxDisplayValue(const CString& value)
 {
-	CString v = value.Trim();
+	CString v = value;
+	v.Trim();
 	int colon = v.Find(_T(":"));
 	if (colon > 0) v = v.Left(colon);
 	if (v.GetLength() >= kBdPbxDomainSuffix.GetLength() && v.Right(kBdPbxDomainSuffix.GetLength()).CompareNoCase(kBdPbxDomainSuffix) == 0) {
@@ -53,7 +54,8 @@ static CString BdPbxDisplayValue(const CString& value)
 		int dot = v.Find(_T("."));
 		if (dot > 0) v = v.Left(dot);
 	}
-	return v.Trim(_T(". \t\r\n"));
+	v.Trim(_T(". \t\r\n"));
+	return v;
 }
 
 static CString BdPbxFullValue(const CString& value)
