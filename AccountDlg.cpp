@@ -406,6 +406,7 @@ void AccountDlg::OnBnClickedOk()
 	edit = (CEdit*)GetDlgItem(IDC_EDIT_USERNAME);
 	edit->GetWindowText(str);
 	m_Account.username=str.Trim();
+	m_Account.authID = m_Account.username;
 
 	edit = (CEdit*)GetDlgItem(IDC_EDIT_PASSWORD);
 	edit->GetWindowText(str);
