@@ -1930,10 +1930,10 @@ int MessagesDlg::GetCallDuration(pjsua_call_id *call_id)
 					call_user_data* user_data = (call_user_data*)pjsua_call_get_user_data(messagesContact->callId);
 					if (user_data) {
 						user_data->CS.Lock();
-						if (user_data->duration < 0) {
-							user_data->duration = (int)time(NULL);
+						if (user_data->mediaStartTime == 0) {
+							user_data->mediaStartTime = time(NULL);
 						}
-						int started = user_data->duration;
+						time_t started = user_data->mediaStartTime;
 						user_data->CS.Unlock();
 						duration = (int)time(NULL) - started;
 						if (duration < 0) {
