@@ -37,5 +37,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public: 
 	void OnKillFocus(CWnd* pNewWnd);
+	void SetBrandColors(COLORREF face, COLORREF hover, COLORREF pushed, COLORREF text = RGB(255,255,255), COLORREF textPushed = RGB(255,255,255));
 	void DrawItem(LPDRAWITEMSTRUCT lpDIS);
 };
