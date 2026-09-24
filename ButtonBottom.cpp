@@ -39,6 +39,18 @@ CButtonBottom::~CButtonBottom()
 {
 }
 
+void CButtonBottom::SetBrandColors(COLORREF face, COLORREF hover, COLORREF pushed, COLORREF text, COLORREF textPushed)
+{
+	m_clrButton = face;
+	m_clrButtonHover = hover;
+	m_clrButtonPushed = pushed;
+	m_clrButtonText = text;
+	m_clrButtonTextPushed = textPushed;
+	m_clrFace = face;
+	m_clrRegular = text;
+	Invalidate();
+}
+
 BEGIN_MESSAGE_MAP(CButtonBottom, CMFCButton)
 	//{{AFX_MSG_MAP(CButtonBottom)
 	ON_WM_KILLFOCUS()
