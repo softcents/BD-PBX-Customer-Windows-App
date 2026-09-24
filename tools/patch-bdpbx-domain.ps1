@@ -61,7 +61,7 @@ RTEXT           "Password", IDC_STATIC, 7, 48 + IDD_ACCOUNT_OFF_LABEL, 70, 8, SS
 EDITTEXT        IDC_EDIT_PASSWORD, 86, 45 + IDD_ACCOUNT_OFF_LABEL, 127, 14, ES_AUTOHSCROLL | ES_PASSWORD
 CONTROL         "", IDC_SYSLINK_DISPLAY_PASSWORD, "SysLink", WS_TABSTOP, 86, 61 + IDD_ACCOUNT_OFF_LABEL, 120, 8
 '@
-$rc = [regex]::Replace($rc, '(?s)RTEXT\s+"Account Name".*?(?=RTEXT\s+"Password")', $accountUi, 1, [System.Text.RegularExpressions.RegexOptions]::Singleline)
+$rc = [regex]::Replace($rc, '(?s)RTEXT\s+"Account Name".*?(?=RTEXT\s+"Password")', $accountUi, 1)
 [IO.File]::WriteAllText($rcPath, $rc, [Text.UTF8Encoding]::new($false))
 
 Write-Host 'BD PBX account UI: ID + Extension/User; backend fills server/proxy/domain and uses username as auth ID.'
