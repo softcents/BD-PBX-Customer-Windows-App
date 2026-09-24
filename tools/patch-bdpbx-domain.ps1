@@ -46,6 +46,8 @@ $cpp = [regex]::Replace($cpp, '(?s)edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_SERVER
 $cpp = [regex]::Replace($cpp, '(?s)edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_SERVER\);\s*edit->GetWindowText\(str\);\s*m_Account\.server\s*=\s*BdPbxFullValue\(str\);.*?edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_USERNAME\);', 'edit = (CEdit*)GetDlgItem(IDC_EDIT_SERVER);\r\n\tedit->GetWindowText(str);\r\n\tm_Account.server = BdPbxFullValue(str);\r\n\tm_Account.proxy = m_Account.server;\r\n\tm_Account.domain = m_Account.server;\r\n\r\n\tedit = (CEdit*)GetDlgItem(IDC_EDIT_USERNAME);')
 $cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_AUTHID\);\r?\n\s*edit->SetWindowText\(m_Account\.authID\);', '', 1)
 $cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_AUTHID\);\r?\n\s*edit->GetWindowText\(str\);\r?\n\s*m_Account\.authID\s*=\s*str\.Trim\(\);', '', 1)
+$cpp = $cpp.Replace('\r\n', "`r`n")
+$cpp = $cpp.Replace('\t', "`t")
 [IO.File]::WriteAllText($cppPath, $cpp, [Text.UTF8Encoding]::new($false))
 
 $rc = [IO.File]::ReadAllText($rcPath)
