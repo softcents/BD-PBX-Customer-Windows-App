@@ -145,6 +145,86 @@ jobs:
           Copy-Item $exe.FullName 'artifacts/BD-PBX.exe' -Force
           Invoke-WebRequest -Uri 'https://aka.ms/vs/17/release/vc_redist.x86.exe' -OutFile 'artifacts/vc_redist.x86.exe' -UseBasicParsing
 
+      - name: Prepare default BD PBX sounds
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $out = Join-Path $env:GITHUB_WORKSPACE 'artifacts'
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+
+          function Write-ToneWav {
+            param(
+              [string]$Path,
+              [double[]]$Frequencies,
+              [double]$ToneDuration = 0.25,
+              [double]$GapDuration = 0.10,
+              [int]$Repeats = 1,
+              [double]$Volume = 0.42
+            )
+            $sampleRate = 8000
+            $channels = 1
+            $bits = 16
+            $segments = @()
+            for ($r = 0; $r -lt $Repeats; $r++) {
+              foreach ($frequency in $Frequencies) {
+                $segments += @{ Frequency = $frequency; Duration = $ToneDuration }
+                $segments += @{ Frequency = 0; Duration = $GapDuration }
+              }
+            }
+            $sampleCount = 0
+            foreach ($segment in $segments) {
+              $sampleCount += [int]($segment.Duration * $sampleRate)
+            }
+            $dataBytes = $sampleCount * 2
+            $fs = New-Object System.IO.FileStream($Path, [System.IO.FileMode]::Create)
+            $bw = New-Object System.IO.BinaryWriter($fs)
+            try {
+              $bw.Write([System.Text.Encoding]::ASCII.GetBytes('RIFF'))
+              $bw.Write([int](36 + $dataBytes))
+              $bw.Write([System.Text.Encoding]::ASCII.GetBytes('WAVE'))
+              $bw.Write([System.Text.Encoding]::ASCII.GetBytes('fmt '))
+              $bw.Write([int]16)
+              $bw.Write([short]1)
+              $bw.Write([short]$channels)
+              $bw.Write([int]$sampleRate)
+              $bw.Write([int]($sampleRate * $channels * ($bits / 8)))
+              $bw.Write([short]($channels * ($bits / 8)))
+              $bw.Write([short]$bits)
+              $bw.Write([System.Text.Encoding]::ASCII.GetBytes('data'))
+              $bw.Write([int]$dataBytes)
+
+              $sampleIndex = 0
+              foreach ($segment in $segments) {
+                $count = [int]($segment.Duration * $sampleRate)
+                for ($i = 0; $i -lt $count; $i++) {
+                  $sample = 0.0
+                  if ($segment.Frequency -gt 0) {
+                    $t = $i / [double]$sampleRate
+                    $fade = [Math]::Min(1.0, [Math]::Min($t / 0.015, (($count / [double]$sampleRate) - $t) / 0.015))
+                    if ($fade -lt 0) { $fade = 0 }
+                    $sample = $Volume * $fade * [Math]::Sin(2 * [Math]::PI * $segment.Frequency * ($sampleIndex / [double]$sampleRate))
+                  }
+                  $bw.Write([short]([Math]::Round($sample * 32767)))
+                  $sampleIndex++
+                }
+              }
+            } finally {
+              $bw.Dispose()
+              $fs.Dispose()
+            }
+          }
+
+          Write-ToneWav (Join-Path $out 'ringtone.wav') @([double]440,[double]554) 0.55 0.12 2 0.45
+          Write-ToneWav (Join-Path $out 'ringing2.wav') @([double]660,[double]880) 0.14 0.10 1 0.40
+          Write-ToneWav (Join-Path $out 'ringing.wav') @([double]523,[double]659) 0.22 0.08 1 0.40
+          Write-ToneWav (Join-Path $out 'msgin.wav') @([double]784,[double]988) 0.10 0.08 1 0.38
+          Write-ToneWav (Join-Path $out 'msgout.wav') @([double]988,[double]784) 0.10 0.08 1 0.38
+          Write-ToneWav (Join-Path $out 'hangup.wav') @([double]523,[double]392) 0.16 0.08 1 0.38
+
+          Get-ChildItem $out -Filter '*.wav' | ForEach-Object {
+            if ($_.Length -lt 1000) { throw "Invalid sound file: $($_.FullName)" }
+          }
+
       - name: Prepare BD PBX installer branding
         shell: powershell
         run: |
