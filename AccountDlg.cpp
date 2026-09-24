@@ -185,6 +185,70 @@ HBRUSH AccountDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	}
 	return hbr;
 }
+void AccountDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
+{
+	CDialog::OnGetMinMaxInfo(lpMMI);
+	const int minW = width > 0 ? width : 236;
+	const int minH = height > 0 ? height : 430;
+	lpMMI->ptMinTrackSize.x = MulDiv(minW, dpiY, 96);
+	lpMMI->ptMinTrackSize.y = MulDiv(minH, dpiY, 96);
+}
+
+void AccountDlg::OnSize(UINT nType, int cx, int cy)
+{
+	CDialog::OnSize(nType, cx, cy);
+	if (!::IsWindow(m_hWnd) || width <= 0 || height <= 0) return;
+
+	const int baseW = MulDiv(width, dpiY, 96);
+	const int baseH = MulDiv(height, dpiY, 96);
+	const int right = max(10, cx - 14);
+	const int fieldRight = max(120, right - 24);
+	const int fieldX = MulDiv(86, dpiY, 96);
+	const int baseFieldRight = MulDiv(213, dpiY, 96);
+	const int fieldW = max(80, fieldRight - fieldX);
+	const int baseFieldW = max(80, baseFieldRight - fieldX);
+	const int dx = fieldW - baseFieldW;
+
+	UINT flags = SWP_NOACTIVATE | SWP_NOZORDER;
+	const int fieldIds[] = {
+		IDC_ACCOUNT_LABEL, IDC_EDIT_SERVER, IDC_EDIT_PROXY, IDC_EDIT_USERNAME,
+		IDC_EDIT_DOMAIN, IDC_EDIT_AUTHID, IDC_EDIT_PASSWORD, IDC_EDIT_DISPLAYNAME,
+		IDC_EDIT_VOICEMAIL, IDC_ACCOUNT_DIALING_PREFIX, IDC_ACCOUNT_DIAL_PLAN,
+		IDC_SRTP, IDC_TRANSPORT, IDC_PUBLIC_ADDR
+	};
+	for (int i = 0; i < (int)(sizeof(fieldIds) / sizeof(fieldIds[0])); ++i) {
+		CWnd* w = GetDlgItem(fieldIds[i]);
+		if (w && ::IsWindow(w->GetSafeHwnd())) w->SetWindowPos(NULL, 0, 0, max(80, baseFieldW + dx), 0, flags | SWP_NOMOVE);
+	}
+
+	const int helpIds[] = {
+		IDC_SYSLINK_SIP_SERVER, IDC_SYSLINK_SIP_PROXY, IDC_SYSLINK_USERNAME,
+		IDC_SYSLINK_DOMAIN, IDC_SYSLINK_AUTHID, IDC_SYSLINK_PASSWORD,
+		IDC_SYSLINK_NAME, IDC_SYSLINK_VOICEMAIL, IDC_ACCOUNT_HELP_DIALING_PREFIX,
+		IDC_ACCOUNT_HELP_DIAL_PLAN, IDC_ACCOUNT_HELP_HIDE_CID, IDC_SYSLINK_ENCRYPTION,
+		IDC_SYSLINK_TRANSPORT, IDC_SYSLINK_PUBLIC_ADDRESS, IDC_SYSLINK_PUBLISH_PRESENCE,
+		IDC_SYSLINK_REWRITE, IDC_SYSLINK_ICE, IDC_SYSLINK_SESSION_TIMER,
+		IDC_SYSLINK_DISPLAY_PASSWORD
+	};
+	for (int i = 0; i < (int)(sizeof(helpIds) / sizeof(helpIds[0])); ++i) {
+		CWnd* w = GetDlgItem(helpIds[i]);
+		if (w && ::IsWindow(w->GetSafeHwnd())) w->SetWindowPos(NULL, right - 7, 0, 7, 0, flags | SWP_NOSIZE);
+	}
+
+	CWnd* save = GetDlgItem(IDOK);
+	CWnd* cancel = GetDlgItem(IDCANCEL);
+	if (save && cancel) {
+		CRect rSave, rCancel;
+		save->GetWindowRect(&rSave); ScreenToClient(&rSave);
+		cancel->GetWindowRect(&rCancel); ScreenToClient(&rCancel);
+		int bottom = max(0, cy - MulDiv(8, dpiY, 96));
+		save->SetWindowPos(NULL, right - MulDiv(75 + 70, dpiY, 96), bottom - rSave.Height(), 0, 0, flags | SWP_NOSIZE);
+		cancel->SetWindowPos(NULL, right - MulDiv(75, dpiY, 96), bottom - rCancel.Height(), 0, 0, flags | SWP_NOSIZE);
+	}
+
+	if (cx != baseW || cy != baseH) Invalidate(FALSE);
+}
+
 void AccountDlg::OnDestroy()
 {
 	mainDlg->accountDlg = NULL;
@@ -200,6 +264,8 @@ void AccountDlg::PostNcDestroy()
 BEGIN_MESSAGE_MAP(AccountDlg, CDialog)
 	ON_WM_CREATE()
 	ON_WM_CTLCOLOR()
+	ON_WM_SIZE()
+	ON_WM_GETMINMAXINFO()
 	ON_WM_SYSCOMMAND()
 	ON_WM_CLOSE()
 	ON_WM_DESTROY()
