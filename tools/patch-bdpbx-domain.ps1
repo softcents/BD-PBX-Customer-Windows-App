@@ -45,19 +45,19 @@ $loadPattern = '(?s)edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_SERVER\);.*?edit = \(
 $cpp = [regex]::Replace($cpp, $loadPattern, {
     param($m)
     return 'edit = (CEdit*)GetDlgItem(IDC_EDIT_SERVER);' + [Environment]::NewLine +
-        '`tedit->SetWindowText(BdPbxDisplayValue(m_Account.server));' + [Environment]::NewLine + [Environment]::NewLine +
-        '`tedit = (CEdit*)GetDlgItem(IDC_EDIT_USERNAME);'
+        'edit->SetWindowText(BdPbxDisplayValue(m_Account.server));' + [Environment]::NewLine + [Environment]::NewLine +
+        'edit = (CEdit*)GetDlgItem(IDC_EDIT_USERNAME);'
 }, 1)
 
 $savePattern = '(?s)edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_SERVER\);.*?edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_USERNAME\);'
 $cpp = [regex]::Replace($cpp, $savePattern, {
     param($m)
     return 'edit = (CEdit*)GetDlgItem(IDC_EDIT_SERVER);' + [Environment]::NewLine +
-        '`tedit->GetWindowText(str);' + [Environment]::NewLine +
-        '`tm_Account.server = BdPbxFullValue(str);' + [Environment]::NewLine +
-        '`tm_Account.proxy = m_Account.server;' + [Environment]::NewLine +
-        '`tm_Account.domain = m_Account.server;' + [Environment]::NewLine + [Environment]::NewLine +
-        '`tedit = (CEdit*)GetDlgItem(IDC_EDIT_USERNAME);'
+        'edit->GetWindowText(str);' + [Environment]::NewLine +
+        'm_Account.server = BdPbxFullValue(str);' + [Environment]::NewLine +
+        'm_Account.proxy = m_Account.server;' + [Environment]::NewLine +
+        'm_Account.domain = m_Account.server;' + [Environment]::NewLine + [Environment]::NewLine +
+        'edit = (CEdit*)GetDlgItem(IDC_EDIT_USERNAME);'
 }, 1)
 
 $cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_AUTHID\);\r?\n\s*edit->SetWindowText\(m_Account\.authID\);', '', 1)
