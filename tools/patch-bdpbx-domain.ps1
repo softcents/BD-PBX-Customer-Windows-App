@@ -7,14 +7,12 @@ $rcPath = Join-Path $root 'res\dialog.rc2'
 $cpp = [IO.File]::ReadAllText($cppPath)
 
 $marker = 'static CString transportValues[] = {'
-$helper = @(
-'static const CString kBdPbxDomainSuffix = _T(".bdpbx.com");',
-'',
+'    CString v = value; v.Trim();',
+'    int colon = v.Find(_T(":"));',
+'    if (colon > 0) v = v.Left(colon);',
 'static CString BdPbxDisplayValue(const CString& value)',
 '{',
-'    CString v = value;',
-'    while (!v.IsEmpty() && (v[0] == _T('' '') || v[0] == _T(''\t'') || v[0] == _T(''\r'') || v[0] == _T(''\n''))) v = v.Mid(1);',
-'    while (!v.IsEmpty() && (v[v.GetLength() - 1] == _T('' '') || v[v.GetLength() - 1] == _T(''\t'') || v[v.GetLength() - 1] == _T(''\r'') || v[v.GetLength() - 1] == _T(''\n''))) v = v.Left(v.GetLength() - 1);',
+'    CString v = value; v.Trim();',
 '    int colon = v.Find(_T(":"));',
 '    if (colon > 0) v = v.Left(colon);',
 '    if (v.GetLength() >= kBdPbxDomainSuffix.GetLength() && v.Right(kBdPbxDomainSuffix.GetLength()).CompareNoCase(kBdPbxDomainSuffix) == 0) {',
@@ -23,8 +21,7 @@ $helper = @(
 '        int dot = v.Find(_T("."));',
 '        if (dot > 0) v = v.Left(dot);',
 '    }',
-'    while (!v.IsEmpty() && v[0] == _T(''.'')) v = v.Mid(1);',
-'    while (!v.IsEmpty() && v[v.GetLength() - 1] == _T(''.'')) v = v.Left(v.GetLength() - 1);',
+'    v.Trim(_T("."));',
 '    return v;',
 '}',
 '',
