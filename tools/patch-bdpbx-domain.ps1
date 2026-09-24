@@ -62,8 +62,7 @@ $cpp = [regex]::Replace($cpp, $savePattern, {
 
 $cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_AUTHID\);\r?\n\s*edit->SetWindowText\(m_Account\.authID\);', '', 1)
 $cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_AUTHID\);\r?\n\s*edit->GetWindowText\(str\);\r?\n\s*m_Account\.authID\s*=\s*str\.Trim\(\);', '', 1)
-$cpp = $cpp.Replace('m_Account.domain.IsEmpty()', 'm_Account.server.IsEmpty()')
-$cpp = [regex]::Replace($cpp, 'm_Account\.server\.IsEmpty\(\)\s*\|\|\s*m_Account\.username\.IsEmpty\(\)', { param($m) 'm_Account.server.IsEmpty() ||' + [Environment]::NewLine + "`t`t" + 'm_Account.username.IsEmpty() ||' + [Environment]::NewLine + "`t`t" + 'm_Account.password.IsEmpty()' }, 1)
+$cpp = [regex]::Replace($cpp, 'm_Account\.domain\.IsEmpty\(\)\s*\|\|\s*m_Account\.username\.IsEmpty\(\)', { param($m) 'm_Account.server.IsEmpty() ||' + [Environment]::NewLine + "`t`t" + 'm_Account.username.IsEmpty() ||' + [Environment]::NewLine + "`t`t" + 'm_Account.password.IsEmpty()' }, 1)
 [IO.File]::WriteAllText($cppPath, $cpp, [Text.UTF8Encoding]::new($false))
 
 $rc = $rc.Replace('RTEXT           "SIP Server", IDC_STATIC, 7, 10 + IDD_ACCOUNT_OFF_LABEL, 70, 8, SS_WORDELLIPSIS', 'RTEXT           "ID", IDC_STATIC, 7, 10 + IDD_ACCOUNT_OFF_LABEL, 70, 8, SS_WORDELLIPSIS')
