@@ -348,6 +348,7 @@ struct call_user_data
 	bool hidden;
 	int holdFrom;
 	int duration;
+	time_t mediaStartTime;
 	call_user_data(pjsua_call_id call_id): tonegen_data(NULL)
 		,recorder_id(PJSUA_INVALID_ID)
 		,hangup(false)
@@ -357,6 +358,7 @@ struct call_user_data
 		,hidden(false)
 		,holdFrom(-1)
 		,duration(-1)
+		,mediaStartTime(0)
 		,srtp(MSIP_SRTP_DISABLED)
 		,rx_pkt_prev(0)
 		,rx_loss_prev(0)
