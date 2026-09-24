@@ -42,8 +42,8 @@ if (-not $cpp.Contains('static const CString kBdPbxDomainSuffix')) {
 }
 
 $cpp = $cpp.Replace('edit->SetWindowText(m_Account.server);', 'edit->SetWindowText(BdPbxDisplayValue(m_Account.server));')
-$cpp = [regex]::Replace($cpp, 'edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_SERVER\);\s*edit->SetWindowText\(BdPbxDisplayValue\(m_Account\.server\)\);.*?edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_USERNAME\);', 'edit = (CEdit*)GetDlgItem(IDC_EDIT_SERVER);\r\n\tedit->SetWindowText(BdPbxDisplayValue(m_Account.server));\r\n\r\n\tedit = (CEdit*)GetDlgItem(IDC_EDIT_USERNAME);', 1, [System.Text.RegularExpressions.RegexOptions]::Singleline)
-$cpp = [regex]::Replace($cpp, 'edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_SERVER\);\s*edit->GetWindowText\(str\);\s*m_Account\.server\s*=\s*BdPbxFullValue\(str\);.*?edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_USERNAME\);', 'edit = (CEdit*)GetDlgItem(IDC_EDIT_SERVER);\r\n\tedit->GetWindowText(str);\r\n\tm_Account.server = BdPbxFullValue(str);\r\n\tm_Account.proxy = m_Account.server;\r\n\tm_Account.domain = m_Account.server;\r\n\r\n\tedit = (CEdit*)GetDlgItem(IDC_EDIT_USERNAME);', 1, [System.Text.RegularExpressions.RegexOptions]::Singleline)
+$cpp = [regex]::Replace($cpp, '(?s)edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_SERVER\);\s*edit->SetWindowText\(BdPbxDisplayValue\(m_Account\.server\)\);.*?edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_USERNAME\);', 'edit = (CEdit*)GetDlgItem(IDC_EDIT_SERVER);\r\n\tedit->SetWindowText(BdPbxDisplayValue(m_Account.server));\r\n\r\n\tedit = (CEdit*)GetDlgItem(IDC_EDIT_USERNAME);', 1)
+$cpp = [regex]::Replace($cpp, '(?s)edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_SERVER\);\s*edit->GetWindowText\(str\);\s*m_Account\.server\s*=\s*BdPbxFullValue\(str\);.*?edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_USERNAME\);', 'edit = (CEdit*)GetDlgItem(IDC_EDIT_SERVER);\r\n\tedit->GetWindowText(str);\r\n\tm_Account.server = BdPbxFullValue(str);\r\n\tm_Account.proxy = m_Account.server;\r\n\tm_Account.domain = m_Account.server;\r\n\r\n\tedit = (CEdit*)GetDlgItem(IDC_EDIT_USERNAME);', 1, [System.Text.RegularExpressions.RegexOptions]::Singleline)
 $cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_AUTHID\);\r?\n\s*edit->SetWindowText\(m_Account\.authID\);', '', 1)
 $cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_AUTHID\);\r?\n\s*edit->GetWindowText\(str\);\r?\n\s*m_Account\.authID\s*=\s*str\.Trim\(\);', '', 1)
 [IO.File]::WriteAllText($cppPath, $cpp, [Text.UTF8Encoding]::new($false))
@@ -61,7 +61,7 @@ RTEXT           "Password", IDC_STATIC, 7, 48 + IDD_ACCOUNT_OFF_LABEL, 70, 8, SS
 EDITTEXT        IDC_EDIT_PASSWORD, 86, 45 + IDD_ACCOUNT_OFF_LABEL, 127, 14, ES_AUTOHSCROLL | ES_PASSWORD
 CONTROL         "", IDC_SYSLINK_DISPLAY_PASSWORD, "SysLink", WS_TABSTOP, 86, 61 + IDD_ACCOUNT_OFF_LABEL, 120, 8
 '@
-$rc = [regex]::Replace($rc, 'RTEXT\s+"Account Name".*?(?=RTEXT\s+"Password")', $accountUi, 1, [System.Text.RegularExpressions.RegexOptions]::Singleline)
+$rc = [regex]::Replace($rc, '(?s)RTEXT\s+"Account Name".*?(?=RTEXT\s+"Password")', $accountUi, 1, [System.Text.RegularExpressions.RegexOptions]::Singleline)
 [IO.File]::WriteAllText($rcPath, $rc, [Text.UTF8Encoding]::new($false))
 
 Write-Host 'BD PBX account UI: ID + Extension/User; backend fills server/proxy/domain and uses username as auth ID.'
