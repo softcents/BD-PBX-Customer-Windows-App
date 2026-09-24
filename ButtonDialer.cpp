@@ -112,78 +112,76 @@ void CButtonDialer::OnMouseMove(UINT nFlags, CPoint point)
 void CButtonDialer::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
 	CDC dc;
-	dc.Attach(lpDrawItemStruct->hDC);		//Get device context object
-	CRect rt;
-	rt = lpDrawItemStruct->rcItem;		//Get button rect
-	dc.FillSolidRect(rt, dc.GetBkColor());
-	dc.SetBkMode(TRANSPARENT);
-
-	CRect rtl = rt;
-	UINT state = lpDrawItemStruct->itemState;	//Get state of the button
-
-	if (!m_hTheme) {
-		UINT uStyle = DFCS_BUTTONPUSH;
-		if ((state & ODS_SELECTED)) {
-			uStyle |= DFCS_PUSHED;
-			rtl.left += 1;
-			rtl.top += 1;
-		}
-		dc.DrawFrameControl(rt, DFC_BUTTON, uStyle);
-	}
-	else {
-		UINT uStyleTheme = RBS_NORMAL;
-		if ((state & ODS_SELECTED)) {
-			uStyleTheme = PBS_PRESSED;
-		}
-		else if (GetCapture() == this) {
-			uStyleTheme = PBS_HOT;
-		}
-		DrawThemeBackground(m_hTheme, dc.m_hDC,
-			BP_PUSHBUTTON, uStyleTheme,
-			rt, NULL);
-	}
+	dc.Attach(lpDrawItemStruct->hDC);
+	CRect rt(lpDrawItemStruct->rcItem);
+	UINT state = lpDrawItemStruct->itemState;
 
 	CString strTemp;
-	GetWindowText(strTemp);		// Get the caption which have been set
+	GetWindowText(strTemp);
+
+	COLORREF face = RGB(38, 50, 56);
+	COLORREF hover = RGB(55, 71, 79);
+	COLORREF pressed = RGB(20, 35, 40);
+
+	if (strTemp == _T("1") || strTemp == _T("2") || strTemp == _T("3")) {
+		face = RGB(0, 122, 255);
+		hover = RGB(30, 144, 255);
+		pressed = RGB(0, 92, 200);
+	}
+	else if (strTemp == _T("4") || strTemp == _T("5") || strTemp == _T("6")) {
+		face = RGB(0, 166, 81);
+		hover = RGB(24, 185, 101);
+		pressed = RGB(0, 125, 61);
+	}
+	else if (strTemp == _T("7") || strTemp == _T("8") || strTemp == _T("9")) {
+		face = RGB(255, 126, 0);
+		hover = RGB(255, 145, 30);
+		pressed = RGB(210, 95, 0);
+	}
+
+	if (state & ODS_DISABLED) {
+		face = RGB(224, 224, 224);
+		hover = face;
+		pressed = face;
+	}
+
+	if (state & ODS_SELECTED) {
+		dc.FillSolidRect(rt, pressed);
+	}
+	else if (GetCapture() == this) {
+		dc.FillSolidRect(rt, hover);
+	}
+	else {
+		dc.FillSolidRect(rt, face);
+	}
+
+	dc.SetBkMode(TRANSPARENT);
+	COLORREF oldText = dc.SetTextColor((state & ODS_DISABLED) ? RGB(145, 145, 145) : RGB(255, 255, 255));
 
 	int x12 = MulDiv(12, dpiY, 96);
 	int x14 = MulDiv(14, dpiY, 96);
 	int x4 = MulDiv(4, dpiY, 96);
-
+	CRect rtl = rt;
 	CString letters;
-	COLORREF crOldColor;
+
 	if (!forceNumeric && m_map.Lookup(strTemp, letters)) {
 		rtl.left += x14;
-		dc.DrawText(strTemp, rtl, DT_LEFT | DT_VCENTER | DT_SINGLELINE);		// Draw out the caption
+		dc.DrawText(strTemp, rtl, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 		HFONT hOldFont = (HFONT)SelectObject(dc.m_hDC, m_FontLetters);
-		// Do your text drawing
 		rtl.left += x12;
 		rtl.right -= x4;
-		crOldColor = dc.SetTextColor(RGB(127, 127, 127));
 		dc.DrawText(letters, rtl, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
-		dc.SetTextColor(crOldColor);
-		// Always select the old font back into the DC
 		SelectObject(dc.m_hDC, hOldFont);
 	}
 	else {
-		if (forceNumeric) {
-			crOldColor = dc.SetTextColor(RGB(80, 80, 80));
-		}
-		else {
-			crOldColor = dc.SetTextColor(RGB(127, 127, 127));
-		}
-		dc.DrawText(strTemp, rt, DT_CENTER | DT_VCENTER | DT_SINGLELINE);		// Draw out the caption
-		dc.SetTextColor(crOldColor);
+		dc.DrawText(strTemp, rt, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 	}
 
-	if ((state & ODS_FOCUS))       // If the button is focused
-	{
-		int iChange = 3;
-		rt.top += iChange;
-		rt.left += iChange;
-		rt.right -= iChange;
-		rt.bottom -= iChange;
-		dc.DrawFocusRect(rt);
+	dc.SetTextColor(oldText);
+	if (state & ODS_FOCUS) {
+		CRect focus = rt;
+		focus.DeflateRect(3, 3);
+		dc.DrawFocusRect(focus);
 	}
 	dc.Detach();
 }
