@@ -39,6 +39,29 @@ static CString transportValues[] = {
 	_T("TLS"),
 };
 
+static const CString kBdPbxDomainSuffix = _T(".bdpbx.com");
+
+static CString BdPbxDisplayValue(const CString& value)
+{
+	CString v = value.Trim();
+	int colon = v.Find(_T(":"));
+	if (colon > 0) v = v.Left(colon);
+	if (v.GetLength() >= kBdPbxDomainSuffix.GetLength() && v.Right(kBdPbxDomainSuffix.GetLength()).CompareNoCase(kBdPbxDomainSuffix) == 0) {
+		v = v.Left(v.GetLength() - kBdPbxDomainSuffix.GetLength());
+	}
+	else {
+		int dot = v.Find(_T("."));
+		if (dot > 0) v = v.Left(dot);
+	}
+	return v.Trim(_T(". \t\r\n"));
+}
+
+static CString BdPbxFullValue(const CString& value)
+{
+	CString v = BdPbxDisplayValue(value);
+	return v.IsEmpty() ? _T("") : v + kBdPbxDomainSuffix;
+}
+
 AccountDlg::AccountDlg(CWnd* pParent /*=NULL*/)
 : CDialog(AccountDlg::IDD, pParent)
 {
@@ -242,11 +265,11 @@ void AccountDlg::Load(int id)
 	edit->SetWindowText(m_Account.label);
 
 	edit = (CEdit*)GetDlgItem(IDC_EDIT_SERVER);
-	edit->SetWindowText(m_Account.server);
+	edit->SetWindowText(BdPbxDisplayValue(m_Account.server));
 	edit = (CEdit*)GetDlgItem(IDC_EDIT_PROXY);
-	edit->SetWindowText(m_Account.proxy);
+	edit->SetWindowText(BdPbxDisplayValue(m_Account.proxy));
 	edit = (CEdit*)GetDlgItem(IDC_EDIT_DOMAIN);
-	edit->SetWindowText(m_Account.domain);
+	edit->SetWindowText(BdPbxDisplayValue(m_Account.domain));
 
 	edit = (CEdit*)GetDlgItem(IDC_EDIT_AUTHID);
 	edit->SetWindowText(m_Account.authID);
@@ -358,13 +381,21 @@ void AccountDlg::OnBnClickedOk()
 
 	edit = (CEdit*)GetDlgItem(IDC_EDIT_SERVER);
 	edit->GetWindowText(str);
-	m_Account.server=str.Trim();
+	m_Account.server = BdPbxFullValue(str);
 	edit = (CEdit*)GetDlgItem(IDC_EDIT_PROXY);
 	edit->GetWindowText(str);
-	m_Account.proxy=str.Trim();
+	m_Account.proxy = BdPbxFullValue(str);
 	edit = (CEdit*)GetDlgItem(IDC_EDIT_DOMAIN);
 	edit->GetWindowText(str);
-	m_Account.domain=str.Trim();
+	m_Account.domain = BdPbxFullValue(str);
+
+	// If only one of the fixed-domain fields was entered, reuse it for the domain.
+	if (m_Account.domain.IsEmpty()) {
+		if (!m_Account.server.IsEmpty()) m_Account.domain = m_Account.server;
+		else if (!m_Account.proxy.IsEmpty()) m_Account.domain = m_Account.proxy;
+	}
+	if (m_Account.server.IsEmpty() && !m_Account.domain.IsEmpty()) m_Account.server = m_Account.domain;
+	if (m_Account.proxy.IsEmpty() && !m_Account.domain.IsEmpty()) m_Account.proxy = m_Account.domain;
 
 	edit = (CEdit*)GetDlgItem(IDC_EDIT_AUTHID);
 	edit->GetWindowText(str);
@@ -462,9 +493,6 @@ void AccountDlg::OnBnClickedOk()
 		}
 	}
 
-	this->ShowWindow(SW_HIDE);
-	mainDlg->accountDlg = NULL;
-
 	if (accountId == -1) { // find id for new account
 		Account dummy;
 		int i = 1;
@@ -478,6 +506,16 @@ void AccountDlg::OnBnClickedOk()
 	}
 
 	accountSettings.AccountSave(accountId, &m_Account);
+
+	Account verifyAccount;
+	if (!accountSettings.AccountLoad(accountId, &verifyAccount) || verifyAccount.domain.IsEmpty() || verifyAccount.username.IsEmpty()) {
+		AfxMessageBox(_T("Unable to save this account. Please check Username and Domain."));
+		return;
+	}
+	m_Account = verifyAccount;
+
+	this->ShowWindow(SW_HIDE);
+	mainDlg->accountDlg = NULL;
 
 	if (accountId) {
 		mainDlg->PJAccountDelete(true);
