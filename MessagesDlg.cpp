@@ -918,11 +918,22 @@ void MessagesDlg::OnEndCall(pjsua_call_info *call_info, call_user_data *user_dat
 	}
 	info = Translate(info.GetBuffer());
 
-	mainDlg->pageCalls->SetDuration(call_info->call_id, msip_get_duration(&call_info->connect_duration), msip_get_duration(&call_info->total_duration));
+	int connectedDuration = msip_get_duration(&call_info->connect_duration);
+	if (user_data && connectedDuration == 0) {
+		user_data->CS.Lock();
+		if (user_data->mediaStartTime != 0) {
+			connectedDuration = (int)(time(NULL) - user_data->mediaStartTime);
+			if (connectedDuration < 0) {
+				connectedDuration = 0;
+			}
+		}
+		user_data->CS.Unlock();
+	}
+	mainDlg->pageCalls->SetDuration(call_info->call_id, connectedDuration, msip_get_duration(&call_info->total_duration));
 	mainDlg->pageCalls->SetInfo(call_info->call_id, info);
 	if (user_data) {
 		user_data->CS.Lock();
-		user_data->duration = msip_get_duration(&call_info->connect_duration);
+		user_data->duration = connectedDuration;
 		user_data->CS.Unlock();
 	}
 
