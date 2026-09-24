@@ -68,6 +68,9 @@ AccountDlg::AccountDlg(CWnd* pParent /*=NULL*/)
 : CDialog(AccountDlg::IDD, pParent)
 {
 	accountId = -1;
+	m_bdGreenBrush.CreateSolidBrush(RGB(0, 106, 78));
+	m_bdBlueBrush.CreateSolidBrush(RGB(0, 51, 102));
+	m_bdRedBrush.CreateSolidBrush(RGB(218, 41, 28));
     if (!Create(IDD, pParent)) {
         AfxMessageBox(_T("Failed to create account window on your system"));
         exit(0);
@@ -94,6 +97,9 @@ BOOL AccountDlg::OnInitDialog()
     GetWindowRect(&rect);
     width = rect.Width() * 96 / dpiY;
     height = rect.Height() * 96 / dpiY;
+
+	SetIcon((HICON)LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_MAINFRAME), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR), FALSE);
+	SetIcon((HICON)LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_MAINFRAME), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR), TRUE);
 
 	TranslateDialog(this->m_hWnd);
 
@@ -154,6 +160,31 @@ BOOL AccountDlg::OnInitDialog()
 	return TRUE;
 }
 
+HBRUSH AccountDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+	if (!pWnd) return hbr;
+	const int id = pWnd->GetDlgCtrlID();
+	if (nCtlColor == CTLCOLOR_STATIC) {
+		if (id == IDC_SYSLINK_SIP_SERVER || id == IDC_SYSLINK_USERNAME || id == IDC_SYSLINK_PASSWORD || id == IDC_SYSLINK_NAME || id == IDC_SYSLINK_VOICEMAIL || id == IDC_ACCOUNT_HELP_DIALING_PREFIX || id == IDC_ACCOUNT_HELP_DIAL_PLAN || id == IDC_ACCOUNT_HELP_HIDE_CID || id == IDC_SYSLINK_ENCRYPTION || id == IDC_SYSLINK_TRANSPORT || id == IDC_SYSLINK_PUBLIC_ADDRESS || id == IDC_SYSLINK_PUBLISH_PRESENCE || id == IDC_SYSLINK_REWRITE || id == IDC_SYSLINK_ICE || id == IDC_SYSLINK_SESSION_TIMER || id == IDC_SYSLINK_DISPLAY_PASSWORD) {
+			pDC->SetTextColor(RGB(0, 106, 78));
+		} else {
+			pDC->SetTextColor(RGB(0, 51, 102));
+		}
+		pDC->SetBkColor(GetSysColor(COLOR_3DFACE));
+		return GetSysColorBrush(COLOR_3DFACE);
+	}
+	if (nCtlColor == CTLCOLOR_EDIT || nCtlColor == CTLCOLOR_LISTBOX) {
+		pDC->SetTextColor(RGB(20, 20, 20));
+		pDC->SetBkColor(RGB(255, 255, 255));
+		return GetSysColorBrush(COLOR_WINDOW);
+	}
+	if (nCtlColor == CTLCOLOR_BTN) {
+		if (id == IDOK) return (HBRUSH)m_bdGreenBrush.GetSafeHandle();
+		if (id == IDCANCEL) return (HBRUSH)m_bdBlueBrush.GetSafeHandle();
+	}
+	return hbr;
+}
 void AccountDlg::OnDestroy()
 {
 	mainDlg->accountDlg = NULL;
@@ -168,6 +199,7 @@ void AccountDlg::PostNcDestroy()
 
 BEGIN_MESSAGE_MAP(AccountDlg, CDialog)
 	ON_WM_CREATE()
+	ON_WM_CTLCOLOR()
 	ON_WM_SYSCOMMAND()
 	ON_WM_CLOSE()
 	ON_WM_DESTROY()
