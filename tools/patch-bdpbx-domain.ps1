@@ -43,7 +43,7 @@ if (-not $cpp.Contains('static const CString kBdPbxDomainSuffix')) {
 
 $cpp = $cpp.Replace('edit->SetWindowText(m_Account.server);', 'edit->SetWindowText(BdPbxDisplayValue(m_Account.server));')
 $cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_PROXY\);\r?\n\s*edit->SetWindowText\(m_Account\.proxy\);\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_DOMAIN\);\r?\n\s*edit->SetWindowText\(m_Account\.domain\);', '')
-$cpp = [regex]::Replace($cpp, 'm_Account\.server\s*=\s*str\.Trim\(\);', 'm_Account.server = BdPbxFullValue(str);')
+$cpp = [regex]::Replace($cpp, 'm_Account\.server\s*=\s*str\.Trim\(\);', 'm_Account.server = BdPbxFullValue(str); m_Account.proxy = m_Account.server; m_Account.domain = m_Account.server;')
 $cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_PROXY\);\r?\n\s*edit->GetWindowText\(str\);\r?\n\s*m_Account\.proxy\s*=\s*BdPbxFullValue\(str\);\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_DOMAIN\);\r?\n\s*edit->GetWindowText\(str\);\r?\n\s*m_Account\.domain\s*=\s*BdPbxFullValue\(str\);', '')
 $cpp = $cpp.Replace('m_Account.domain.IsEmpty()', 'm_Account.server.IsEmpty()')
 $cpp = $cpp.Replace('if (m_Account.domain.IsEmpty()) {', 'if (m_Account.server.IsEmpty()) {')
