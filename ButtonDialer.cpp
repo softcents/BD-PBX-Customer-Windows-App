@@ -123,10 +123,11 @@ void CButtonDialer::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	COLORREF hover = RGB(55, 71, 79);
 	COLORREF pressed = RGB(20, 35, 40);
 
+	// BD-PBX logo palette: dark blue, green, red.
 	if (strTemp == _T("1") || strTemp == _T("2") || strTemp == _T("3")) {
-		face = RGB(0, 122, 255);
-		hover = RGB(30, 144, 255);
-		pressed = RGB(0, 92, 200);
+		face = RGB(30, 45, 105);
+		hover = RGB(50, 65, 130);
+		pressed = RGB(20, 32, 80);
 	}
 	else if (strTemp == _T("4") || strTemp == _T("5") || strTemp == _T("6")) {
 		face = RGB(0, 166, 81);
@@ -137,6 +138,11 @@ void CButtonDialer::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 		face = RGB(218, 41, 28);
 		hover = RGB(235, 70, 55);
 		pressed = RGB(170, 25, 18);
+	}
+	else {
+		face = RGB(30, 45, 105);
+		hover = RGB(50, 65, 130);
+		pressed = RGB(20, 32, 80);
 	}
 
 	if (state & ODS_DISABLED) {
