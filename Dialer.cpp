@@ -427,23 +427,23 @@ BOOL Dialer::OnInitDialog()
 	int height2 = height * 2;
 	int height3 = height * 3;
 	// BD PBX branded dial pad: keep deliberate spacing between every key.
-	AutoMove(IDC_KEY_1, 1, 0, 31, 16);
-	AutoMove(IDC_KEY_4, 1, 17, 31, 16);
-	AutoMove(IDC_KEY_7, 1, 34, 31, 16);
-	AutoMove(IDC_KEY_STAR, 1, 51, 31, 16);
-	AutoMove(IDC_REDIAL, 1, 68, 31, 15);
-	AutoMove(IDC_DELETE, 1, 68, 31, 15);
+	AutoMove(IDC_KEY_1, 1, 0, 30, 15);
+	AutoMove(IDC_KEY_4, 1, 17, 30, 15);
+	AutoMove(IDC_KEY_7, 1, 34, 30, 15);
+	AutoMove(IDC_KEY_STAR, 1, 51, 30, 15);
+	AutoMove(IDC_REDIAL, 1, 68, 30, 14);
+	AutoMove(IDC_DELETE, 1, 68, 30, 14);
 
-	AutoMove(IDC_KEY_2, 34, 0, 32, 16);
-	AutoMove(IDC_KEY_5, 34, 17, 32, 16);
-	AutoMove(IDC_KEY_8, 34, 34, 32, 16);
-	AutoMove(IDC_KEY_0, 34, 51, 32, 16);
-	AutoMove(IDC_KEY_PLUS, 34, 68, 32, 15);
-	AutoMove(IDC_KEY_3, 68, 0, 31, 16);
-	AutoMove(IDC_KEY_6, 68, 17, 31, 16);
-	AutoMove(IDC_KEY_9, 68, 34, 31, 16);
-	AutoMove(IDC_KEY_GRATE, 68, 51, 31, 16);
-	AutoMove(IDC_CLEAR, 68, 68, 31, 15);
+	AutoMove(IDC_KEY_2, 34, 0, 30, 15);
+	AutoMove(IDC_KEY_5, 34, 17, 30, 15);
+	AutoMove(IDC_KEY_8, 34, 34, 30, 15);
+	AutoMove(IDC_KEY_0, 34, 51, 30, 15);
+	AutoMove(IDC_KEY_PLUS, 34, 68, 30, 14);
+	AutoMove(IDC_KEY_3, 68, 0, 30, 15);
+	AutoMove(IDC_KEY_6, 68, 17, 30, 15);
+	AutoMove(IDC_KEY_9, 68, 34, 30, 15);
+	AutoMove(IDC_KEY_GRATE, 68, 51, 30, 15);
+	AutoMove(IDC_CLEAR, 68, 68, 30, 14);
 
 #ifdef _GLOBAL_VIDEO
 	AutoMove(IDC_VIDEO_CALL, 1, 85, 13, 15);
@@ -796,11 +796,12 @@ void Dialer::RebuildButtons(bool init)
 			rect.right -= stepPx;
 		}
 				// BD PBX brand palette for bottom action buttons.
+		// BD-PBX logo palette: green/red with dark-blue secondary actions.
 		if (addRec) m_ButtonRec.SetBrandColors(RGB(218,41,28), RGB(235,70,55), RGB(170,25,18));
-		if (addConf) m_ButtonConf.SetBrandColors(RGB(0,84,166), RGB(25,110,195), RGB(0,55,115));
+		if (addConf) m_ButtonConf.SetBrandColors(RGB(30,45,105), RGB(50,65,130), RGB(20,32,80));
 		if (addAA) m_ButtonAA.SetBrandColors(RGB(0,166,81), RGB(24,185,101), RGB(0,125,61));
-		if (addAC) m_ButtonAC.SetBrandColors(RGB(0,84,166), RGB(25,110,195), RGB(0,55,115));
-		if (addFWD) m_ButtonFWD.SetBrandColors(RGB(0,84,166), RGB(25,110,195), RGB(0,55,115));
+		if (addAC) m_ButtonAC.SetBrandColors(RGB(30,45,105), RGB(50,65,130), RGB(20,32,80));
+		if (addFWD) m_ButtonFWD.SetBrandColors(RGB(30,45,105), RGB(50,65,130), RGB(20,32,80));
 		if (addDND) m_ButtonDND.SetBrandColors(RGB(218,41,28), RGB(235,70,55), RGB(170,25,18));
 
 		if (!init) {
