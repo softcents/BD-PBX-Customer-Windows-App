@@ -35,6 +35,7 @@ Type: files; Name: "{autodesktop}\BD PBX.lnk"
 
 [Files]
 Source: "..\artifacts\BD-PBX.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\artifacts\*.wav"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\branding\BD-PBX.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\artifacts\vc_redist.x86.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
