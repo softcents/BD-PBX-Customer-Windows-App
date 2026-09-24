@@ -84,6 +84,8 @@ public:
 	CButtonBottom m_ButtonConf;
 
 	CButtonEx m_ButtonCall;
+	CButtonEx m_ButtonVideo;
+	CButtonEx m_ButtonMessage;
 	//CMFCButton m_ButtonCall;
 	CButtonEx m_ButtonEnd;
 
