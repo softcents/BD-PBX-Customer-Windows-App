@@ -666,8 +666,8 @@ static void on_call_media_state(pjsua_call_id call_id)
 		// when media actually became usable so the dialer can show duration.
 		if (call_info->media_status == PJSUA_CALL_MEDIA_ACTIVE) {
 			user_data->CS.Lock();
-			if (user_data->duration < 0) {
-				user_data->duration = (int)time(NULL);
+			if (user_data->mediaStartTime == 0) {
+				user_data->mediaStartTime = time(NULL);
 			}
 			user_data->CS.Unlock();
 			mainDlg->PostMessage(WM_TIMER, IDT_TIMER_CALL, NULL);
