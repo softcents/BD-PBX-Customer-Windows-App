@@ -134,9 +134,9 @@ void CButtonDialer::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 		pressed = RGB(0, 125, 61);
 	}
 	else if (strTemp == _T("7") || strTemp == _T("8") || strTemp == _T("9")) {
-		face = RGB(255, 126, 0);
-		hover = RGB(255, 145, 30);
-		pressed = RGB(210, 95, 0);
+		face = RGB(218, 41, 28);
+		hover = RGB(235, 70, 55);
+		pressed = RGB(170, 25, 18);
 	}
 
 	if (state & ODS_DISABLED) {
