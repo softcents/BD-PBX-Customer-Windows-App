@@ -3502,8 +3502,19 @@ void CmainDlg::PJAccountConfig(pjsua_acc_config * acc_cfg, Account * account)
 		}
 	}
 
+	// BD PBX: the visible Extension / User is the SIP credential username.
+	// Keep authentication deterministic and do not allow a stale hidden authID
+	// or temporary global password to override the values entered by the user.
+	CString sipUsername = account->username;
+	CString sipPassword = account->password;
+	if (sipUsername.IsEmpty() && !isLocal) {
+		sipUsername = get_account_username();
+	}
+	if (sipPassword.IsEmpty() && !isLocal) {
+		sipPassword = get_account_password();
+	}
 	acc_cfg->cred_count = 1;
-	acc_cfg->cred_info[0].username = MSIP::StrToPjStr(!account->authID.IsEmpty() ? account->authID : (isLocal ? account->username : get_account_username()));
+	acc_cfg->cred_info[0].username = MSIP::StrToPjStr(sipUsername);
 	acc_cfg->cred_info[0].realm = pj_str("*");
 	acc_cfg->cred_info[0].scheme = pj_str("Digest");
 	if (!account->digest.IsEmpty()) {
@@ -3512,7 +3523,7 @@ void CmainDlg::PJAccountConfig(pjsua_acc_config * acc_cfg, Account * account)
 	}
 	else {
 		acc_cfg->cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
-		acc_cfg->cred_info[0].data = MSIP::StrToPjStr((isLocal ? account->password : get_account_password()));
+		acc_cfg->cred_info[0].data = MSIP::StrToPjStr(sipPassword);
 	}
 
 	CStringList proxies;
