@@ -50,22 +50,14 @@ $cpp = $cpp.Replace('m_Account.domain=str.Trim();', 'm_Account.domain=BdPbxFullV
 [IO.File]::WriteAllText($cppPath, $cpp, [Text.UTF8Encoding]::new($false))
 
 $rc = [IO.File]::ReadAllText($rcPath)
-# Keep the .bdpbx.com suffix hidden in the dialog.
-# The C++ patch above still strips the suffix for display and appends it on save.
-$controls = @(
-    @{ id='IDC_EDIT_SERVER'; y='7' },
-    @{ id='IDC_EDIT_PROXY'; y='26' },
-    @{ id='IDC_EDIT_DOMAIN'; y='71' }
-)
-foreach ($c in $controls) {
-    $pattern = 'EDITTEXT\s+' + [regex]::Escape($c.id) + ',\s*86,\s*' + $c.y + '\s*\+\s*IDD_ACCOUNT_OFF_LABEL,\s*(?:78|127)\s*,\s*14,\s*ES_AUTOHSCROLL'
-    $replacement = 'EDITTEXT        ' + $c.id + ', 86, ' + $c.y + ' + IDD_ACCOUNT_OFF_LABEL, 127, 14, ES_AUTOHSCROLL'
-    $newRc = [regex]::Replace($rc, $pattern, $replacement, 1)
-    if ($newRc -eq $rc) { throw ('Account domain resource block not found: ' + $c.id) }
-    $rc = $newRc
-}
-# Remove any previously generated visible .bdpbx.com suffix labels.
-$rc = [regex]::Replace($rc, '\r?\nLTEXT\s+".bdpbx\.com",\s*IDC_STATIC,\s*166,\s*\d+\s*\+\s*IDD_ACCOUNT_OFF_LABEL,\s*47,\s*8', '')
+# One visible fixed-domain input: user enters only the subdomain.
+# The backend copies the normalized full domain into server, proxy and domain.
+$rc = [regex]::Replace($rc, 'RTEXT\s+"SIP Server",\s*IDC_STATIC,\s*7,\s*10\s*\+\s*IDD_ACCOUNT_OFF_LABEL,\s*70,\s*8,\s*SS_WORDELLIPSIS', 'RTEXT           "Subdomain", IDC_STATIC, 7, 10 + IDD_ACCOUNT_OFF_LABEL, 70, 8, SS_WORDELLIPSIS', 1)
+$rc = [regex]::Replace($rc, 'RTEXT\s+"SIP Proxy",\s*IDC_STATIC,\s*7,\s*29\s*\+\s*IDD_ACCOUNT_OFF_LABEL,\s*70,\s*8,\s*SS_WORDELLIPSIS\r?\nEDITTEXT\s+IDC_EDIT_PROXY[^\r\n]*\r?\n(?:\d+\r?\n)?', '', 1)
+$rc = [regex]::Replace($rc, 'LTEXT\s+"\*",\s*IDC_ACCOUNT_REQUIRED_DOMAIN[^\r\n]*\r?\n', '', 1)
+$rc = [regex]::Replace($rc, 'RTEXT\s+"Domain",\s*IDC_STATIC,\s*7,\s*74\s*\+\s*IDD_ACCOUNT_OFF_LABEL[^\r\n]*\r?\nEDITTEXT\s+IDC_EDIT_DOMAIN[^\r\n]*\r?\n(?:\d+\r?\n)?', '', 1)
+$rc = [regex]::Replace($rc, 'CONTROL\s+"<a>\?</a>",\s*IDC_SYSLINK_SIP_PROXY[^\r\n]*\r?\n', '', 1)
+$rc = [regex]::Replace($rc, 'CONTROL\s+"<a>\?</a>",\s*IDC_SYSLINK_DOMAIN[^\r\n]*\r?\n', '', 1)
 [IO.File]::WriteAllText($rcPath, $rc, [Text.UTF8Encoding]::new($false))
 
-Write-Host 'BD PBX fixed-domain backend applied; .bdpbx.com suffix hidden in account UI.'
+Write-Host 'BD PBX fixed-domain UI: one Subdomain field; backend fills server/proxy/domain.'
