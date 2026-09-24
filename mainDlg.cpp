@@ -311,7 +311,16 @@ LRESULT CmainDlg::onCallState(WPARAM wParam, LPARAM lParam)
 		str->SetString(Translate(MSIP::PjToStr(&call_info->last_status_text).GetBuffer()));
 		break;
 	case PJSIP_INV_STATE_CONNECTING:
-		str->Format(_T("%s..."), Translate(_T("Connecting")));
+		// Some PBX/SIP providers establish media before PJSIP transitions
+		// the INVITE state to CONFIRMED. In that case the call is already
+		// usable, so do not leave the UI stuck on "Connecting...".
+		if (call_info->media_status == PJSUA_CALL_MEDIA_ACTIVE ||
+			call_info->media_status == PJSUA_CALL_MEDIA_REMOTE_HOLD) {
+			str->SetString(Translate(_T("Connected")));
+		}
+		else {
+			str->Format(_T("%s..."), Translate(_T("Connecting")));
+		}
 		break;
 	case PJSIP_INV_STATE_CONFIRMED:
 		str->SetString(Translate(_T("Connected")));
@@ -653,6 +662,17 @@ static void on_call_media_state(pjsua_call_id call_id)
 		}
 		user_data->CS.Unlock();
 
+		// If media is active while SIP is still in CONNECTING, remember
+		// when media actually became usable so the dialer can show duration.
+		if (call_info->media_status == PJSUA_CALL_MEDIA_ACTIVE) {
+			user_data->CS.Lock();
+			if (user_data->duration < 0) {
+				user_data->duration = (int)time(NULL);
+			}
+			user_data->CS.Unlock();
+			mainDlg->PostMessage(WM_TIMER, IDT_TIMER_CALL, NULL);
+			mainDlg->SetTimer(IDT_TIMER_CALL, 1000, NULL);
+		}
 		//--
 		::SetTimer(mainDlg->pageDialer->m_hWnd, IDT_TIMER_VU_METER, 100, NULL);
 		//--
