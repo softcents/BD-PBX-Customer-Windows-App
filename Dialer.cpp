@@ -74,6 +74,8 @@ void Dialer::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_KEY_PLUS, m_ButtonDialerPlus);
 	DDX_Control(pDX, IDC_CLEAR, m_ButtonDialerClear);
 	DDX_Control(pDX, IDC_CALL, m_ButtonCall);
+	DDX_Control(pDX, IDC_VIDEO_CALL, m_ButtonVideo);
+	DDX_Control(pDX, IDC_MESSAGE, m_ButtonMessage);
 	DDX_Control(pDX, IDC_END, m_ButtonEnd);
 }
 
@@ -398,6 +400,24 @@ BOOL Dialer::OnInitDialog()
 		m_ToolTip.Activate(TRUE);
 	}
 
+	// BD PBX brand colors: green/red/blue with white text.
+	m_ButtonCall.m_FaceColor = RGB(0, 166, 81);
+	m_ButtonCall.m_TextColor = RGB(255, 255, 255);
+	m_ButtonCall.SetFaceColor(m_ButtonCall.m_FaceColor, true);
+	m_ButtonCall.SetTextColor(m_ButtonCall.m_TextColor);
+	m_ButtonVideo.m_FaceColor = RGB(218, 41, 28);
+	m_ButtonVideo.m_TextColor = RGB(255, 255, 255);
+	m_ButtonVideo.SetFaceColor(m_ButtonVideo.m_FaceColor, true);
+	m_ButtonVideo.SetTextColor(m_ButtonVideo.m_TextColor);
+	m_ButtonMessage.m_FaceColor = RGB(218, 41, 28);
+	m_ButtonMessage.m_TextColor = RGB(255, 255, 255);
+	m_ButtonMessage.SetFaceColor(m_ButtonMessage.m_FaceColor, true);
+	m_ButtonMessage.SetTextColor(m_ButtonMessage.m_TextColor);
+	m_ButtonEnd.m_FaceColor = RGB(218, 41, 28);
+	m_ButtonEnd.m_TextColor = RGB(255, 255, 255);
+	m_ButtonEnd.SetFaceColor(m_ButtonEnd.m_FaceColor, true);
+	m_ButtonEnd.SetTextColor(m_ButtonEnd.m_TextColor);
+
 	RebuildButtons(true);
 	AutoMove(IDC_NUMBER, 0, 0, 100, 0);
 	AutoMove(IDC_DIALER_DTMF, 100, 0, 0, 0);
@@ -406,31 +426,32 @@ BOOL Dialer::OnInitDialog()
 	int height4 = height * 4;
 	int height2 = height * 2;
 	int height3 = height * 3;
-	AutoMove(IDC_KEY_1, 0, 0, 33, height);
-	AutoMove(IDC_KEY_4, 0, height, 33, height);
-	AutoMove(IDC_KEY_7, 0, height2, 33, height);
-	AutoMove(IDC_KEY_STAR, 0, height3, 33, height);
-	AutoMove(IDC_REDIAL, 0, height4, 33, height);
-	AutoMove(IDC_DELETE, 0, height4, 33, 17);
+	// BD PBX branded dial pad: keep deliberate spacing between every key.
+	AutoMove(IDC_KEY_1, 1, 0, 31, 16);
+	AutoMove(IDC_KEY_4, 1, 17, 31, 16);
+	AutoMove(IDC_KEY_7, 1, 34, 31, 16);
+	AutoMove(IDC_KEY_STAR, 1, 51, 31, 16);
+	AutoMove(IDC_REDIAL, 1, 68, 31, 15);
+	AutoMove(IDC_DELETE, 1, 68, 31, 15);
 
-	AutoMove(IDC_KEY_2, 33, 0, 34, height);
-	AutoMove(IDC_KEY_5, 33, height, 34, height);
-	AutoMove(IDC_KEY_8, 33, height2, 34, height);
-	AutoMove(IDC_KEY_0, 33, height3, 34, height);
-	AutoMove(IDC_KEY_PLUS, 33, height4, 34, height);
-	AutoMove(IDC_KEY_3, 67, 0, 33, height);
-	AutoMove(IDC_KEY_6, 67, height, 33, height);
-	AutoMove(IDC_KEY_9, 67, height2, 33, height);
-	AutoMove(IDC_KEY_GRATE, 67, height3, 33, height);
-	AutoMove(IDC_CLEAR, 67, height4, 33, height);
+	AutoMove(IDC_KEY_2, 34, 0, 32, 16);
+	AutoMove(IDC_KEY_5, 34, 17, 32, 16);
+	AutoMove(IDC_KEY_8, 34, 34, 32, 16);
+	AutoMove(IDC_KEY_0, 34, 51, 32, 16);
+	AutoMove(IDC_KEY_PLUS, 34, 68, 32, 15);
+	AutoMove(IDC_KEY_3, 68, 0, 31, 16);
+	AutoMove(IDC_KEY_6, 68, 17, 31, 16);
+	AutoMove(IDC_KEY_9, 68, 34, 31, 16);
+	AutoMove(IDC_KEY_GRATE, 68, 51, 31, 16);
+	AutoMove(IDC_CLEAR, 68, 68, 31, 15);
 
 #ifdef _GLOBAL_VIDEO
-	AutoMove(IDC_VIDEO_CALL, 0, 85, 14, 15);
-	AutoMove(IDC_CALL, 14, 85, 72, 15);
-	AutoMove(IDC_MESSAGE, 86, 85, 14, 15);
+	AutoMove(IDC_VIDEO_CALL, 1, 85, 13, 15);
+	AutoMove(IDC_CALL, 15, 85, 70, 15);
+	AutoMove(IDC_MESSAGE, 86, 85, 13, 15);
 #else
-	AutoMove(IDC_CALL, 0, 85, 84, 15);
-	AutoMove(IDC_MESSAGE, 84, 85, 16, 15);
+	AutoMove(IDC_CALL, 1, 85, 82, 15);
+	AutoMove(IDC_MESSAGE, 84, 85, 15, 15);
 #endif
 
 	AutoMove(IDC_END, 14, 85, 72, 15);
@@ -513,10 +534,10 @@ BOOL Dialer::OnInitDialog()
 	((CButton*)GetDlgItem(IDC_TRANSFER))->SetIcon(m_hIconTransfer);
 #ifdef _GLOBAL_VIDEO
 	m_hIconVideo = LoadImageIcon(IDI_VIDEO, 16, 16);
-	((CButton*)GetDlgItem(IDC_VIDEO_CALL))->SetIcon(m_hIconVideo);
+	m_ButtonVideo.SetIcon(m_hIconVideo);
 #endif
 	m_hIconMessage = LoadImageIcon(IDI_MESSAGE, 16, 16);
-	((CButton*)GetDlgItem(IDC_MESSAGE))->SetIcon(m_hIconMessage);
+	m_ButtonMessage.SetIcon(m_hIconMessage);
 
 	UpdateCallButton();
 
@@ -774,6 +795,14 @@ void Dialer::RebuildButtons(bool init)
 			rect.left -= stepPx;
 			rect.right -= stepPx;
 		}
+				// BD PBX brand palette for bottom action buttons.
+		if (addRec) m_ButtonRec.SetBrandColors(RGB(218,41,28), RGB(235,70,55), RGB(170,25,18));
+		if (addConf) m_ButtonConf.SetBrandColors(RGB(0,84,166), RGB(25,110,195), RGB(0,55,115));
+		if (addAA) m_ButtonAA.SetBrandColors(RGB(0,166,81), RGB(24,185,101), RGB(0,125,61));
+		if (addAC) m_ButtonAC.SetBrandColors(RGB(0,84,166), RGB(25,110,195), RGB(0,55,115));
+		if (addFWD) m_ButtonFWD.SetBrandColors(RGB(0,84,166), RGB(25,110,195), RGB(0,55,115));
+		if (addDND) m_ButtonDND.SetBrandColors(RGB(218,41,28), RGB(235,70,55), RGB(170,25,18));
+
 		if (!init) {
 			SetWindowPos(NULL, 0, 0, windowRect.Width(), windowRect.Height(), SWP_NOZORDER | SWP_NOMOVE);
 		}
@@ -1210,9 +1239,9 @@ void Dialer::UpdateCallButton(BOOL forse, int callsCount)
 			if (!isEndVisisble) {
 				m_ButtonCall.ShowWindow(SW_HIDE);
 #ifdef _GLOBAL_VIDEO
-				GetDlgItem(IDC_VIDEO_CALL)->ShowWindow(SW_HIDE);
+				m_ButtonVideo.ShowWindow(SW_HIDE);
 #endif
-				GetDlgItem(IDC_MESSAGE)->ShowWindow(SW_HIDE);
+				m_ButtonMessage.ShowWindow(SW_HIDE);
 				GetDlgItem(IDC_HOLD)->ShowWindow(SW_SHOW);
 				GetDlgItem(IDC_TRANSFER)->ShowWindow(SW_SHOW);
 				m_ButtonEnd.ShowWindow(SW_SHOW);
@@ -1241,14 +1270,14 @@ void Dialer::UpdateCallButton(BOOL forse, int callsCount)
 	m_ButtonCall.EnableWindow(state);
 #ifdef _GLOBAL_VIDEO
 	if (accountSettings.disableVideo) {
-		GetDlgItem(IDC_VIDEO_CALL)->EnableWindow(false);
+		m_ButtonVideo.EnableWindow(false);
 	}
 	else {
 		GetDlgItem(IDC_VIDEO_CALL)->EnableWindow(state);
 	}
 #endif
 	if (accountSettings.disableMessaging) {
-		GetDlgItem(IDC_MESSAGE)->EnableWindow(false);
+		m_ButtonMessage.EnableWindow(false);
 	}
 	else {
 		GetDlgItem(IDC_MESSAGE)->EnableWindow(state);
