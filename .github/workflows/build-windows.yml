@@ -1,4 +1,5 @@
 name: Build BD PBX Windows
+# Rebuild after account UI update
 
 on:
   push:
