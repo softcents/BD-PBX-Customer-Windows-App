@@ -1923,6 +1923,26 @@ int MessagesDlg::GetCallDuration(pjsua_call_id *call_id)
 					*call_id = messagesContact->callId;
 					count++;
 				}
+				else if (call_info.state == PJSIP_INV_STATE_CONNECTING &&
+					call_info.media_status == PJSUA_CALL_MEDIA_ACTIVE) {
+					// Media is already active even though the SIP state has not
+					// reached CONFIRMED yet. Use the media-active timestamp.
+					call_user_data* user_data = (call_user_data*)pjsua_call_get_user_data(messagesContact->callId);
+					if (user_data) {
+						user_data->CS.Lock();
+						if (user_data->duration < 0) {
+							user_data->duration = (int)time(NULL);
+						}
+						int started = user_data->duration;
+						user_data->CS.Unlock();
+						duration = (int)time(NULL) - started;
+						if (duration < 0) {
+							duration = 0;
+						}
+						*call_id = messagesContact->callId;
+						count++;
+					}
+				}
 			}
 		}
 		i++;
