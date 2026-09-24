@@ -42,31 +42,26 @@ if (-not $cpp.Contains('static const CString kBdPbxDomainSuffix')) {
 }
 
 $cpp = $cpp.Replace('edit->SetWindowText(m_Account.server);', 'edit->SetWindowText(BdPbxDisplayValue(m_Account.server));')
-$cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_PROXY\);\r?\n\s*edit->SetWindowText\(BdPbxDisplayValue\(m_Account\.proxy\)\);\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_DOMAIN\);\r?\n\s*edit->SetWindowText\(BdPbxDisplayValue\(m_Account\.domain\)\);', '')
-$cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_AUTHID\);\r?\n\s*edit->SetWindowText\(m_Account\.authID\);', '')
-$cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_PROXY\);\r?\n\s*edit->SetWindowText\(m_Account\.proxy\);\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_DOMAIN\);\r?\n\s*edit->SetWindowText\(m_Account\.domain\);', '')
-$cpp = [regex]::Replace($cpp, 'm_Account\.server\s*=\s*str\.Trim\(\);', 'm_Account.server = BdPbxFullValue(str); m_Account.proxy = m_Account.server; m_Account.domain = m_Account.server;')
-$cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_PROXY\);\r?\n\s*edit->GetWindowText\(str\);\r?\n\s*m_Account\.proxy\s*=\s*BdPbxFullValue\(str\);\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_DOMAIN\);\r?\n\s*edit->GetWindowText\(str\);\r?\n\s*m_Account\.domain\s*=\s*BdPbxFullValue\(str\);', '')
-$cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_PROXY\);\r?\n\s*edit->GetWindowText\(str\);\r?\n\s*m_Account\.proxy\s*=\s*BdPbxFullValue\(str\);\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_DOMAIN\);\r?\n\s*edit->GetWindowText\(str\);\r?\n\s*m_Account\.domain\s*=\s*BdPbxFullValue\(str\);', '')
-$cpp = $cpp.Replace('m_Account.domain.IsEmpty()', 'm_Account.server.IsEmpty()')
-$cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_AUTHID\);\r?\n\s*edit->GetWindowText\(str\);\r?\n\s*m_Account\.authID\s*=\s*str\.Trim\(\);', '')
-$cpp = $cpp.Replace('if (m_Account.domain.IsEmpty()) {', 'if (m_Account.server.IsEmpty()) {')
-$cpp = $cpp.Replace('if (!m_Account.server.IsEmpty()) m_Account.domain = m_Account.server;', 'if (!m_Account.server.IsEmpty()) m_Account.domain = m_Account.server;')
+$cpp = [regex]::Replace($cpp, 'edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_SERVER\);\s*edit->SetWindowText\(BdPbxDisplayValue\(m_Account\.server\)\);.*?edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_USERNAME\);', 'edit = (CEdit*)GetDlgItem(IDC_EDIT_SERVER);\r\n\tedit->SetWindowText(BdPbxDisplayValue(m_Account.server));\r\n\r\n\tedit = (CEdit*)GetDlgItem(IDC_EDIT_USERNAME);', 1, [System.Text.RegularExpressions.RegexOptions]::Singleline)
+$cpp = [regex]::Replace($cpp, 'edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_SERVER\);\s*edit->GetWindowText\(str\);\s*m_Account\.server\s*=\s*BdPbxFullValue\(str\);.*?edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_USERNAME\);', 'edit = (CEdit*)GetDlgItem(IDC_EDIT_SERVER);\r\n\tedit->GetWindowText(str);\r\n\tm_Account.server = BdPbxFullValue(str);\r\n\tm_Account.proxy = m_Account.server;\r\n\tm_Account.domain = m_Account.server;\r\n\r\n\tedit = (CEdit*)GetDlgItem(IDC_EDIT_USERNAME);', 1, [System.Text.RegularExpressions.RegexOptions]::Singleline)
+$cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_AUTHID\);\r?\n\s*edit->SetWindowText\(m_Account\.authID\);', '', 1)
+$cpp = [regex]::Replace($cpp, '\r?\n\s*edit = \(CEdit\*\)GetDlgItem\(IDC_EDIT_AUTHID\);\r?\n\s*edit->GetWindowText\(str\);\r?\n\s*m_Account\.authID\s*=\s*str\.Trim\(\);', '', 1)
 [IO.File]::WriteAllText($cppPath, $cpp, [Text.UTF8Encoding]::new($false))
 
 $rc = [IO.File]::ReadAllText($rcPath)
-# One visible fixed-domain input: user enters only the subdomain.
-# The backend copies the normalized full domain into server, proxy and domain.
-$rc = [regex]::Replace($rc, 'RTEXT\s+"SIP Server",\s*IDC_STATIC,\s*7,\s*10\s*\+\s*IDD_ACCOUNT_OFF_LABEL,\s*70,\s*8,\s*SS_WORDELLIPSIS', 'RTEXT           "ID", IDC_STATIC, 7, 10 + IDD_ACCOUNT_OFF_LABEL, 70, 8, SS_WORDELLIPSIS', 1)
-$rc = [regex]::Replace($rc, 'RTEXT\s+"SIP Proxy",\s*IDC_STATIC,\s*7,\s*29\s*\+\s*IDD_ACCOUNT_OFF_LABEL[^\r\n]*\r?\nEDITTEXT\s+IDC_EDIT_PROXY\s*,[^\r\n]*\r?\n(?:\s*\d+\s*\r?\n)?(?:\s*,\s*14,\s*ES_AUTOHSCROLL\s*\r?\n)?', '', 1)
-$rc = [regex]::Replace($rc, 'RTEXT\s+"Domain",\s*IDC_STATIC,\s*7,\s*74\s*\+\s*IDD_ACCOUNT_OFF_LABEL[^\r\n]*\r?\nEDITTEXT\s+IDC_EDIT_DOMAIN\s*,[^\r\n]*\r?\n(?:\s*\d+\s*\r?\n)?(?:\s*,\s*14,\s*ES_AUTOHSCROLL\s*\r?\n)?', '', 1)
-$rc = [regex]::Replace($rc, 'LTEXT\s+"\*",\s*IDC_ACCOUNT_REQUIRED_DOMAIN[^\r\n]*\r?\n', '', 1)
-$rc = [regex]::Replace($rc, 'RTEXT\s+"Domain",\s*IDC_STATIC,\s*7,\s*74\s*\+\s*IDD_ACCOUNT_OFF_LABEL[^\r\n]*\r?\nEDITTEXT\s+IDC_EDIT_DOMAIN[^\r\n]*\r?\n(?:\d+\r?\n)?', '', 1)
-$rc = [regex]::Replace($rc, 'CONTROL\s+"<a>\?</a>",\s*IDC_SYSLINK_SIP_PROXY[^\r\n]*\r?\n', '', 1)
-$rc = [regex]::Replace($rc, 'CONTROL\s+"<a>\?</a>",\s*IDC_SYSLINK_DOMAIN[^\r\n]*\r?\n', '', 1)
-$rc = $rc.Replace('"Username"', '"Extension / User"')
-$rc = [regex]::Replace($rc, 'LTEXT\s+"\*",\s*IDC_ACCOUNT_REQUIRED_USERNAME[^\r\n]*\r?\n', 'LTEXT           "*", IDC_ACCOUNT_REQUIRED_USERNAME, 78, 55 + IDD_ACCOUNT_OFF_LABEL, 8, 5\r\n', 1)
-$rc = [regex]::Replace($rc, 'RTEXT\s+"Login",\s*IDC_STATIC[^\r\n]*\r?\nEDITTEXT\s+IDC_EDIT_AUTHID[^\r\n]*\r?\n', '', 1)
+$accountUi = @'
+RTEXT           "Account Name", IDC_STATIC, 7, 10, 70, 8, SS_WORDELLIPSIS
+EDITTEXT        IDC_ACCOUNT_LABEL, 86, 7, 127, 14, ES_AUTOHSCROLL
+RTEXT           "ID", IDC_STATIC, 7, 10 + IDD_ACCOUNT_OFF_LABEL, 70, 8, SS_WORDELLIPSIS
+EDITTEXT        IDC_EDIT_SERVER, 86, 7 + IDD_ACCOUNT_OFF_LABEL, 127, 14, ES_AUTOHSCROLL
+LTEXT           "*", IDC_ACCOUNT_REQUIRED_USERNAME, 78, 29 + IDD_ACCOUNT_OFF_LABEL, 8, 5
+RTEXT           "Extension / User", IDC_STATIC, 7, 29 + IDD_ACCOUNT_OFF_LABEL, 70, 8, SS_WORDELLIPSIS
+EDITTEXT        IDC_EDIT_USERNAME, 86, 26 + IDD_ACCOUNT_OFF_LABEL, 127, 14, ES_AUTOHSCROLL
+RTEXT           "Password", IDC_STATIC, 7, 48 + IDD_ACCOUNT_OFF_LABEL, 70, 8, SS_WORDELLIPSIS
+EDITTEXT        IDC_EDIT_PASSWORD, 86, 45 + IDD_ACCOUNT_OFF_LABEL, 127, 14, ES_AUTOHSCROLL | ES_PASSWORD
+CONTROL         "", IDC_SYSLINK_DISPLAY_PASSWORD, "SysLink", WS_TABSTOP, 86, 61 + IDD_ACCOUNT_OFF_LABEL, 120, 8
+'@
+$rc = [regex]::Replace($rc, 'RTEXT\s+"Account Name".*?(?=RTEXT\s+"Password")', $accountUi, 1, [System.Text.RegularExpressions.RegexOptions]::Singleline)
 [IO.File]::WriteAllText($rcPath, $rc, [Text.UTF8Encoding]::new($false))
 
 Write-Host 'BD PBX account UI: ID + Extension/User; backend fills server/proxy/domain and uses username as auth ID.'
