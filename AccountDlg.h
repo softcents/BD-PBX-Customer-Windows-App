@@ -36,6 +36,9 @@ public:
 	void Load(int id);
 
 private:
+	CBrush m_bdGreenBrush;
+	CBrush m_bdBlueBrush;
+	CBrush m_bdRedBrush;
 	int width;
 	int height;
 	int accountId;
@@ -51,6 +54,7 @@ Account m_Account1;
 
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnClose();
 	afx_msg LRESULT OnNcHitTest(CPoint point);
 	afx_msg void OnBnClickedCancel();
