@@ -359,6 +359,7 @@ struct call_user_data
 		,holdFrom(-1)
 		,duration(-1)
 		,mediaStartTime(0)
+		,mediaStartTime(0)
 		,srtp(MSIP_SRTP_DISABLED)
 		,rx_pkt_prev(0)
 		,rx_loss_prev(0)
