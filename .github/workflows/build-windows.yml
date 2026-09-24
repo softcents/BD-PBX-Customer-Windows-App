@@ -184,12 +184,12 @@ jobs:
               $bw.Write([System.Text.Encoding]::ASCII.GetBytes('WAVE'))
               $bw.Write([System.Text.Encoding]::ASCII.GetBytes('fmt '))
               $bw.Write([int]16)
-              $bw.Write([short]1)
-              $bw.Write([short]$channels)
+              $bw.Write([Int16]1)
+              $bw.Write([Int16]$channels)
               $bw.Write([int]$sampleRate)
               $bw.Write([int]($sampleRate * $channels * ($bits / 8)))
-              $bw.Write([short]($channels * ($bits / 8)))
-              $bw.Write([short]$bits)
+              $bw.Write([Int16]($channels * ($bits / 8)))
+              $bw.Write([Int16]$bits)
               $bw.Write([System.Text.Encoding]::ASCII.GetBytes('data'))
               $bw.Write([int]$dataBytes)
 
@@ -204,7 +204,7 @@ jobs:
                     if ($fade -lt 0) { $fade = 0 }
                     $sample = $Volume * $fade * [Math]::Sin(2 * [Math]::PI * $segment.Frequency * ($sampleIndex / [double]$sampleRate))
                   }
-                  $bw.Write([short]([Math]::Round($sample * 32767)))
+                  $bw.Write([Int16]([Math]::Round($sample * 32767)))
                   $sampleIndex++
                 }
               }
