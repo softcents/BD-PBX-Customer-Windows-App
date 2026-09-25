@@ -400,23 +400,38 @@ BOOL Dialer::OnInitDialog()
 		m_ToolTip.Activate(TRUE);
 	}
 
-	// BD PBX brand colors: green/red/blue with white text.
-	m_ButtonCall.m_FaceColor = RGB(0, 166, 81);
+	// BD-PBX brand palette: blue, green and red. Keep all branded controls
+	// solid-filled with white text for a consistent dialer appearance.
+	const COLORREF bdBlue = RGB(35, 45, 110);
+	const COLORREF bdGreen = RGB(0, 166, 81);
+	const COLORREF bdRed = RGB(218, 41, 28);
+	const COLORREF bdBlueHover = RGB(50, 65, 135);
+	const COLORREF bdGreenHover = RGB(24, 185, 101);
+	const COLORREF bdRedHover = RGB(235, 70, 55);
+
+	m_ButtonCall.m_FaceColor = bdGreen;
 	m_ButtonCall.m_TextColor = RGB(255, 255, 255);
-	m_ButtonCall.SetFaceColor(m_ButtonCall.m_FaceColor, true);
+	m_ButtonCall.SetFaceColor(bdGreen, true);
 	m_ButtonCall.SetTextColor(m_ButtonCall.m_TextColor);
-	m_ButtonVideo.m_FaceColor = RGB(218, 41, 28);
+	m_ButtonVideo.m_FaceColor = bdRed;
 	m_ButtonVideo.m_TextColor = RGB(255, 255, 255);
-	m_ButtonVideo.SetFaceColor(m_ButtonVideo.m_FaceColor, true);
+	m_ButtonVideo.SetFaceColor(bdRed, true);
 	m_ButtonVideo.SetTextColor(m_ButtonVideo.m_TextColor);
-	m_ButtonMessage.m_FaceColor = RGB(218, 41, 28);
+	m_ButtonMessage.m_FaceColor = bdRed;
 	m_ButtonMessage.m_TextColor = RGB(255, 255, 255);
-	m_ButtonMessage.SetFaceColor(m_ButtonMessage.m_FaceColor, true);
+	m_ButtonMessage.SetFaceColor(bdRed, true);
 	m_ButtonMessage.SetTextColor(m_ButtonMessage.m_TextColor);
-	m_ButtonEnd.m_FaceColor = RGB(218, 41, 28);
+	m_ButtonEnd.m_FaceColor = bdRed;
 	m_ButtonEnd.m_TextColor = RGB(255, 255, 255);
-	m_ButtonEnd.SetFaceColor(m_ButtonEnd.m_FaceColor, true);
+	m_ButtonEnd.SetFaceColor(bdRed, true);
 	m_ButtonEnd.SetTextColor(m_ButtonEnd.m_TextColor);
+
+	m_ButtonDND.SetBrandColors(bdRed, bdRedHover, RGB(170, 25, 18));
+	m_ButtonFWD.SetBrandColors(bdBlue, bdBlueHover, RGB(20, 30, 80));
+	m_ButtonAA.SetBrandColors(bdGreen, bdGreenHover, RGB(0, 125, 61));
+	m_ButtonAC.SetBrandColors(bdBlue, bdBlueHover, RGB(20, 30, 80));
+	m_ButtonConf.SetBrandColors(bdBlue, bdBlueHover, RGB(20, 30, 80));
+	m_ButtonRec.SetBrandColors(bdRed, bdRedHover, RGB(170, 25, 18));
 
 	RebuildButtons(true);
 	AutoMove(IDC_NUMBER, 0, 0, 100, 0);
