@@ -18,8 +18,10 @@ EXSTYLE WS_EX_APPWINDOW
 FONT 8, "Microsoft Sans Serif", 0, 0, 0x1
 CLASS _GLOBAL_NAME
 BEGIN
-CONTROL         "", IDC_MAIN_TAB, "SysTabControl32", WS_TABSTOP, 0, 0
-, _GLOBAL_WIDTH + 2, 16
+// BD-PBX logo: keep the branded logo visible beside the main tabs.
+CONTROL         IDI_MAINFRAME, IDC_STATIC, "Static", SS_ICON | SS_REALSIZEIMAGE | SS_CENTERIMAGE, 2, 1, 20, 14
+CONTROL         "", IDC_MAIN_TAB, "SysTabControl32", WS_TABSTOP, 24, 0
+, _GLOBAL_WIDTH - 24, 16
 PUSHBUTTON      "Menu", IDC_MAIN_MENU, _GLOBAL_WIDTH - 19, 3
 , 16, 11, BS_ICON
 END
